@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Le Petit Renard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <canvas id="jeu"></canvas> <!-- sa taille est réglée dans js/ecran.js -->
+    <p class="aide">
+      ← → : bouger · Espace ou ↑ : sauter · X : tirer · P ou Échap : pause
+    </p>
+  </main>
+  <!--
+    Tous ces fichiers partagent leurs variables et leurs fonctions.
+    L'ordre compte : le code qui s'exécute tout de suite (pas dans une fonction)
+    ne peut utiliser que ce qui a été défini dans les fichiers au-dessus.
+    main.js est donc en dernier, car c'est lui qui lance le jeu.
+  -->
+  <script src="js/reglages.js"></script>
+  <script src="js/niveau.js"></script>
+  <script src="js/ecran.js"></script>
+  <script src="js/clavier.js"></script>
+  <script src="js/sons.js"></script>
+  <script src="js/collisions.js"></script>
+  <script src="js/etat.js"></script>
+  <script src="js/joueur.js"></script>
+  <script src="js/ennemis.js"></script>
+  <script src="js/effets.js"></script>
+  <script src="js/tirs.js"></script>
+  <script src="js/dessin-decor.js"></script>
+  <script src="js/dessin-personnages.js"></script>
+  <script src="js/interface.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

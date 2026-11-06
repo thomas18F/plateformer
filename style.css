@@ -1,0 +1,29 @@
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #1d2330;
+  color: #cfd6e4;
+  font-family: system-ui, sans-serif;
+}
+
+/* Le jeu prend toute la place disponible dans la fenêtre,
+   sans déformer l'image (rapport largeur/hauteur de 960 / 544). */
+main {
+  width: min(100vw - 32px, (100vh - 80px) * 960 / 544);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.aide {
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.7;
+}

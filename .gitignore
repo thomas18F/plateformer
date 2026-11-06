@@ -1,0 +1,7 @@
+# Réglages de PyCharm (propres à ton ordinateur)
+.idea/
+
+# Fichiers temporaires des éditeurs et du système
+*.swp
+*~
+.DS_Store
