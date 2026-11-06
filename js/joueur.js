@@ -6,6 +6,7 @@ function creerJoueur(x, y) {
   return {
     x, y, l: 22, h: 30, vx: 0, vy: 0, dir: 1,
     auSol: false, coyote: 0, memoSaut: 0, anim: 0,
+    pv: PV_JOUEUR, // points de vie
     mort: false, timerMort: 0,
   };
 }
@@ -135,6 +136,12 @@ function touchePics(j) {
     }
   }
   return false;
+}
+
+// Retire des points de vie au renard ; il perd une vie quand il n'en a plus
+function blesserJoueur(degats) {
+  joueur.pv -= degats;
+  if (joueur.pv <= 0) mourir(false);
 }
 
 function mourir(tombeDansLeVide) {

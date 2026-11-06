@@ -29,6 +29,7 @@ function son(freqDebut, freqFin, duree, type = "square", volume = 0.07) {
 const sons = {
   saut: () => son(280, 560, 0.15),
   tir: () => son(900, 300, 0.1, "square", 0.05),
+  tirEnnemi: () => son(380, 140, 0.18, "triangle", 0.09),
   piece: () => { son(990, 990, 0.07); setTimeout(() => son(1320, 1320, 0.2), 70); },
   ecrase: () => son(420, 90, 0.15, "triangle", 0.15),
   bloc: () => son(160, 80, 0.08, "square", 0.08),

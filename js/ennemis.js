@@ -5,6 +5,8 @@
 function creerEnnemi(x, y) {
   return {
     x: x + 2, y: y + 8, l: 28, h: 24, vx: -VITESSE_ENNEMI, vy: 0,
+    pv: PV_ENNEMI, // points de vie
+    attenteTir: 0, // secondes à attendre avant de pouvoir tirer à nouveau
     actif: false, mort: false, ejecte: false, timer: 0, anim: Math.random() * 10,
   };
 }
@@ -41,6 +43,14 @@ function majEnnemis(dt) {
     if (e.y > hauteurNiveau) {
       e.mort = true;
       e.timer = 0;
+      continue;
+    }
+
+    // Tir : si le renard est dans la zone de détection et que le délai est écoulé
+    e.attenteTir = Math.max(0, e.attenteTir - dt);
+    if (e.attenteTir === 0 && chevauche(zoneDetection(e), joueur)) {
+      tirerEnnemi(e);
+      e.attenteTir = DELAI_TIR_ENNEMI;
     }
   }
 
@@ -56,6 +66,28 @@ function majEnnemis(dt) {
   }
 
   ennemis = ennemis.filter((e) => !e.mort || e.timer > 0);
+}
+
+// Le sens dans lequel l'ennemi marche : 1 = vers la droite, -1 = vers la gauche
+function sensEnnemi(e) {
+  return e.vx < 0 ? -1 : 1;
+}
+
+// La zone de détection : un rectangle devant l'ennemi, de la même hauteur que lui
+function zoneDetection(e) {
+  const sens = sensEnnemi(e);
+  return {
+    x: sens > 0 ? e.x + e.l : e.x - DETECTION_ENNEMI,
+    y: e.y,
+    l: DETECTION_ENNEMI,
+    h: e.h,
+  };
+}
+
+// Retire des points de vie à un ennemi ; il meurt quand il n'en a plus
+function blesserEnnemi(e, degats) {
+  e.pv -= degats;
+  if (e.pv <= 0) ecraserEnnemi(e, true); // éjecté, comme quand on frappe le bloc sous lui
 }
 
 function ecraserEnnemi(e, ejecte) {
