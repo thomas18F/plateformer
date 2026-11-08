@@ -5,87 +5,88 @@
 // =====================================================
 
 // Crée un tir qui part de l'avant du tireur (renard ou ennemi), à mi-hauteur
-function creerTir(tireur, sens, camp, vitesse, portee) {
+function creerTir(tireur, sens, camp, projectile) {
   tirs.push({
     x: sens > 0 ? tireur.x + tireur.l : tireur.x,
     y: tireur.y + tireur.h / 2,
     sens,         // 1 = vers la droite, -1 = vers la gauche
     camp,         // "joueur" ou "ennemi"
-    vitesse,      // px/s
-    portee,       // distance maximale (px)
+    forme: projectile.forme,
+    couleur: projectile.couleur,
+    rayon: projectile.rayon,
+    spectral: projectile.spectral,
+    vitesse: projectile.vitesse, // px/s
+    portee: projectile.portee,  // distance maximale (px)
+    degats: projectile.degats,
     parcouru: 0,  // distance déjà parcourue (px)
   });
 }
 
 // Le renard tire dans la direction où il regarde
-function tirer() {
-  creerTir(joueur, joueur.dir, "joueur", VITESSE_TIR, PORTEE_TIR);
-  sons.tir();
-}
-
-// Un ennemi tire dans la direction où il marche
-function tirerEnnemi(e) {
-  creerTir(e, sensEnnemi(e), "ennemi", VITESSE_TIR_ENNEMI, PORTEE_TIR_ENNEMI);
-  sons.tirEnnemi();
+function activerCapacite(utilisateur, capacite, camp) {
+  const sens = camp === "joueur" ? utilisateur.dir : sensEnnemi(utilisateur);
+  creerTir(utilisateur, sens, camp, capacite.projectile);
+  if (camp === "joueur") sons.tir();
+  else sons.tirEnnemi();
 }
 
 // Fait avancer les tirs en ligne droite, et les retire :
 //  - après leur portée,
-//  - s'ils rencontrent un bloc (seulement si TIR_BLOQUE_PAR_DECOR est activé),
+//  - s'ils rencontrent un bloc (sauf s'ils sont spectraux),
 //  - s'ils touchent leur cible : un ennemi pour un tir du renard, le renard pour un tir ennemi.
 // Les tirs ne se touchent pas entre eux : ils se croisent.
 function majTirs(dt) {
-  for (const t of tirs) {
+  for (const tir of tirs) {
     // on n'avance jamais plus loin que la portée, même sur la dernière image
-    const pas = Math.min(t.vitesse * dt, t.portee - t.parcouru);
-    t.x += t.sens * pas;
-    t.parcouru += pas;
+    const pas = Math.min(tir.vitesse * dt, tir.portee - tir.parcouru);
+    tir.x += tir.sens * pas;
+    tir.parcouru += pas;
 
-    if (TIR_BLOQUE_PAR_DECOR && tirToucheLeDecor(t)) {
-      t.arrete = true;
+    if (!tir.spectral && tirToucheLeDecor(tir)) {
+      tir.arrete = true;
       continue;
     }
 
-    if (t.camp === "joueur") {
-      const e = ennemiTouchePar(t);
-      if (e) {
-        blesserEnnemi(e, DEGATS_TIR);
-        t.arrete = true; // un tir ne blesse qu'un seul ennemi
+    if (tir.camp === "joueur") {
+      const ennemi = ennemiTouchePar(tir);
+      if (ennemi) {
+        blesserEnnemi(ennemi, tir.degats);
+        tir.arrete = true; // un tir ne blesse qu'un seul ennemi
       }
-    } else if (etat === "jeu" && chevauche(hitboxTir(t), joueur)) {
+    } else if (etat === "jeu" && chevauche(hitboxTir(tir), joueur)) {
       // (pas pendant la descente du drapeau : le niveau est déjà gagné)
-      blesserJoueur(DEGATS_TIR_ENNEMI);
-      t.arrete = true;
+      blesserJoueur(tir.degats);
+      tir.arrete = true;
     }
   }
-  tirs = tirs.filter((t) => t.parcouru < t.portee && !t.arrete);
+  tirs = tirs.filter((tir) => tir.parcouru < tir.portee && !tir.arrete);
 }
 
 // La hitbox d'un tir : un petit carré autour du dessin
-function hitboxTir(t) {
-  return { x: t.x - RAYON_TIR, y: t.y - RAYON_TIR, l: RAYON_TIR * 2, h: RAYON_TIR * 2 };
+function hitboxTir(tir) {
+  return { x: tir.x - tir.rayon, y: tir.y - tir.rayon, l: tir.rayon * 2, h: tir.rayon * 2 };
 }
 
 // Le tir touche-t-il un bloc solide (un bloc qui a une hitbox) ?
 // On réutilise la même fonction que pour les collisions du renard et des ennemis.
-function tirToucheLeDecor(t) {
-  return tuilesTouchees(hitboxTir(t)).length > 0;
+function tirToucheLeDecor(tir) {
+  return tuilesTouchees(hitboxTir(tir)).length > 0;
 }
 
 // Le premier ennemi vivant touché par le tir (ou undefined s'il n'y en a aucun)
-function ennemiTouchePar(t) {
-  const zone = hitboxTir(t);
-  return ennemis.find((e) => !e.mort && chevauche(zone, e));
+function ennemiTouchePar(tir) {
+  const zone = hitboxTir(tir);
+  return ennemis.find((ennemi) => !ennemi.mort && chevauche(zone, ennemi));
 }
 
 function dessinerTirs() {
-  const r = RAYON_TIR;
   for (const t of tirs) {
-    if (t.camp === "joueur") {
-      ctx.fillStyle = "#e53935"; // cercle rouge
+    const r = t.rayon;
+    if (t.forme === "cercle") {
+      ctx.fillStyle = t.couleur;
       ellipse(t.x, t.y, r, r);
     } else {
-      ctx.fillStyle = "#6d28d9"; // triangle violet, pointe dans le sens du tir
+      ctx.fillStyle = t.couleur;
       triangle(t.x + t.sens * r, t.y, t.x - t.sens * r, t.y - r, t.x - t.sens * r, t.y + r);
     }
   }

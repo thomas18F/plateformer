@@ -16,17 +16,48 @@ const VIES_DEPART = 3;
 const PV_JOUEUR = 20;         // points de vie du renard (remis au maximum à chaque nouvelle vie)
 
 // Les tirs (du renard et des ennemis)
-const RAYON_TIR = 5;          // taille des tirs : rayon du cercle rouge, demi-côté du triangle violet (px)
-const TIR_BLOQUE_PAR_DECOR = false; // true : les tirs s'arrêtent contre les blocs ; false : ils les traversent
+// Capacités disponibles dans le jeu : description indépendante des utilisateurs.
+const CAPACITES = [
+  {
+    id: "flammeche",
+    type: "projectile",
+    projectile: { forme: "cercle", couleur: "#e53935", rayon: 5, spectral: false, vitesse: 480, portee: 320, degats: 5 },
+  },
+  {
+    id: "dard-venin",
+    type: "projectile",
+    projectile: { forme: "triangle", couleur: "#6d28d9", rayon: 5, spectral: false, vitesse: 200, portee: 320, degats: 5 },
+  },
+  {
+    id: "balle-ombre",
+    type: "projectile",
+    projectile: { forme: "cercle", couleur: "#6d28d9", rayon: 8, spectral: true, vitesse: 240, portee: 320, degats: 5 },
+  },
+  {
+    id: "ecrasement",
+    type: "ecrasement",
+    duree: 3,
+    degats: 10,
+  },
+  {
+    id: "charge",
+    type: "charge",
+    duree: 3,
+    degats: 10,
+    distanceDash: 64,
+    vitesseDash: 480,
+  },
+];
 
-// Tirs du renard (cercles rouges)
-const PORTEE_TIR = 320;       // distance parcourue par un tir avant de disparaître (px)
-const VITESSE_TIR = 480;      // px/s
-const DEGATS_TIR = 5;         // points de vie retirés à un ennemi touché
+// Contrôles du joueur et capacités attribuées au joueur, séparés des capacités elles-mêmes.
+const TOUCHES_JOUEUR = { gauche: "arrowleft", droite: "arrowright", saut: "arrowup", capacite1: "x", capacite2: "c", capacite3: "v", capacite4: "b", entree: "enter", pause: "p" };
+const CAPACITES_JOUEUR = [
+  { action: "capacite1", capacite: "flammeche" },
+  { action: "capacite2", capacite: "ecrasement" },
+  { action: "capacite3", capacite: "balle-ombre" },
+  { action: "capacite4", capacite: "charge" },
+];
 
-// Tirs des ennemis (triangles violets)
+// Comportement de tir ennemi (détection et délai, indépendants du projectile utilisé).
 const DETECTION_ENNEMI = 256; // un ennemi tire si le renard est devant lui, à sa hauteur, à moins de ça (px)
 const DELAI_TIR_ENNEMI = 4;   // secondes minimum entre deux tirs d'un même ennemi
-const PORTEE_TIR_ENNEMI = 320;
-const VITESSE_TIR_ENNEMI = 200;
-const DEGATS_TIR_ENNEMI = 5;  // points de vie retirés au renard touché

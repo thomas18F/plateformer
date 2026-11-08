@@ -6,15 +6,10 @@ const touches = {};   // touches actuellement enfoncées
 let appuye = {};      // touches qui viennent juste d'être enfoncées
 
 function actionDeLaTouche(e) {
-  switch (e.key.toLowerCase()) {
-    case "arrowleft": return "gauche";
-    case "arrowright": return "droite";
-    case "arrowup": case " ": return "saut";
-    case "x": return "tir";
-    case "enter": return "entree";
-    case "p": case "escape": return "pause";
-  }
-  return null;
+  const touche = e.key.toLowerCase();
+  if (touche === " ") return "saut";
+  if (touche === "escape") return "pause";
+  return Object.keys(TOUCHES_JOUEUR).find((action) => TOUCHES_JOUEUR[action] === touche) || null;
 }
 
 window.addEventListener("keydown", (e) => {

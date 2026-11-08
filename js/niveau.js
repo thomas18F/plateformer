@@ -32,12 +32,12 @@ const NIVEAU = [
 // colonne 0 = tout à gauche, ligne 0 = tout en haut (le sol commence à la ligne 15).
 // Il est posé en bas de sa case ; si la case est en l'air, il tombe jusqu'au sol.
 const ENNEMIS = [
-  { colonne: 24, ligne: 14 },
-  { colonne: 31, ligne: 14 },
-  { colonne: 49, ligne: 10 },
-  { colonne: 55, ligne: 14 },
-  { colonne: 57, ligne: 14 },
-  { colonne: 86, ligne: 14 },
-  { colonne: 95, ligne: 14 },
-  { colonne: 105, ligne: 14 },
+  { colonne: 24, ligne: 14, capacite: "dard-venin" },
+  { colonne: 31, ligne: 14, capacite: "dard-venin" },
+  { colonne: 49, ligne: 10, capacite: "dard-venin" },
+  { colonne: 55, ligne: 14, capacite: "dard-venin" },
+  { colonne: 57, ligne: 14, capacite: "dard-venin" },
+  { colonne: 86, ligne: 14, capacite: "dard-venin" },
+  { colonne: 95, ligne: 14, capacite: "dard-venin" },
+  { colonne: 105, ligne: 14, capacite: "dard-venin" },
 ];

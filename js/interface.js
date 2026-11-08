@@ -39,9 +39,10 @@ function dessinerEcran() {
   if (etat === "titre") {
     titre("Le Petit Renard", "#ffb347");
     lignes([
-      "← → : se déplacer       X : tirer",
+      "← → : se déplacer       X : flammèche       C : écrasement       V : balle ombre       B : charge",
       "Espace ou ↑ : sauter (reste appuyé pour sauter plus haut)",
-      "Saute sur les gloups violets pour les écraser",
+      "Active écrasement avec C, puis saute sur un gloup dans les 3 secondes",
+      "Active charge avec B : dash de 32 px et attaque latérale pendant 3 secondes",
       "Tape les blocs dorés par en dessous",
       "Atteins le drapeau au bout du niveau !",
     ], 240);

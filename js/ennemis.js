@@ -2,10 +2,11 @@
 //  Les ennemis (les gloups)
 // =====================================================
 
-function creerEnnemi(x, y) {
+function creerEnnemi(x, y, capaciteId) {
   return {
     x: x + 2, y: y + 8, l: 28, h: 24, vx: -VITESSE_ENNEMI, vy: 0,
     pv: PV_ENNEMI, // points de vie
+    capacite: CAPACITES.find((c) => c.id === capaciteId) || null,
     attenteTir: 0, // secondes à attendre avant de pouvoir tirer à nouveau
     actif: false, mort: false, ejecte: false, timer: 0, anim: Math.random() * 10,
   };
@@ -48,8 +49,8 @@ function majEnnemis(dt) {
 
     // Tir : si le renard est dans la zone de détection et que le délai est écoulé
     e.attenteTir = Math.max(0, e.attenteTir - dt);
-    if (e.attenteTir === 0 && chevauche(zoneDetection(e), joueur)) {
-      tirerEnnemi(e);
+    if (e.capacite && e.attenteTir === 0 && chevauche(zoneDetection(e), joueur)) {
+      activerCapacite(e, e.capacite, "ennemi");
       e.attenteTir = DELAI_TIR_ENNEMI;
     }
   }

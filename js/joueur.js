@@ -6,6 +6,9 @@ function creerJoueur(x, y) {
   return {
     x, y, l: 22, h: 30, vx: 0, vy: 0, dir: 1,
     auSol: false, coyote: 0, memoSaut: 0, anim: 0,
+    dureeEcrasement: 0,
+    dureeCharge: 0, distanceDashRestante: 0, directionDash: 1,
+    ennemisTouchésParCharge: new Set(),
     pv: PV_JOUEUR, // points de vie
     mort: false, timerMort: 0,
   };
@@ -26,9 +29,14 @@ function majJoueur(dt) {
     return;
   }
 
-  // Déplacement horizontal
+  // Déplacement horizontal, sauf pendant le petit dash de charge.
   const sens = (touches.droite ? 1 : 0) - (touches.gauche ? 1 : 0);
-  if (sens !== 0) {
+  if (j.distanceDashRestante > 0) {
+    j.vx = j.directionDash * Math.min(
+      CAPACITES.find((c) => c.id === "charge").vitesseDash,
+      j.distanceDashRestante / dt,
+    );
+  } else if (sens !== 0) {
     j.dir = sens;
     let accel = j.auSol ? ACCEL_SOL : ACCEL_AIR;
     if (j.vx * sens < 0) accel *= 2; // demi-tour plus nerveux
@@ -50,8 +58,23 @@ function majJoueur(dt) {
     sons.saut();
   }
 
-  // Tir : un tir par appui sur X
-  if (appuye.tir) tirer();
+  // Une capacité est activée une seule fois par appui sur sa touche.
+  j.dureeEcrasement = Math.max(0, j.dureeEcrasement - dt);
+  j.dureeCharge = Math.max(0, j.dureeCharge - dt);
+  for (const attribution of CAPACITES_JOUEUR) {
+    if (appuye[attribution.action]) {
+      const capacite = CAPACITES.find((c) => c.id === attribution.capacite);
+      if (!capacite) continue;
+      if (capacite.type === "ecrasement") j.dureeEcrasement = capacite.duree;
+      else if (capacite.type === "charge") {
+        j.dureeCharge = capacite.duree;
+        j.distanceDashRestante = capacite.distanceDash;
+        j.directionDash = j.dir;
+        j.ennemisTouchésParCharge.clear();
+      }
+      else activerCapacite(j, capacite, "joueur");
+    }
+  }
 
   // Gravité : plus forte si on relâche le saut, pour faire des petits sauts
   let g = GRAVITE;
@@ -60,7 +83,15 @@ function majJoueur(dt) {
 
   // Collisions avec le décor
   const basAvant = j.y + j.h;
+  const xAvantDeplacement = j.x;
   const res = deplacer(j, dt);
+  if (j.distanceDashRestante > 0) {
+    j.distanceDashRestante = Math.max(0, j.distanceDashRestante - Math.abs(j.x - xAvantDeplacement));
+    if (res.mur || j.distanceDashRestante === 0) {
+      j.distanceDashRestante = 0;
+      j.vx = 0;
+    }
+  }
   j.auSol = res.sol;
   if (j.auSol) j.coyote = 0.1;
   if (res.tete.length > 0) frapperBloc(blocLePlusProche(res.tete, j));
@@ -82,15 +113,21 @@ function majJoueur(dt) {
   }
   pieces = pieces.filter((p) => !p.prise);
 
-  // Ennemis : si on leur tombe dessus on les écrase, sinon on perd une vie
+  // Les dégâts de contact ne s'appliquent qu'avec la capacité correspondante.
   const tombait = j.vy > 0;
   for (const e of ennemis) {
     if (e.mort || !chevauche(j, e)) continue;
-    if (tombait && basAvant <= e.y + 12) {
-      ecraserEnnemi(e, false);
+    const tombeSurLeDessus = tombait && basAvant <= e.y + 12;
+    if (tombeSurLeDessus && j.dureeEcrasement > 0) {
+      const capaciteEcrasement = CAPACITES.find((c) => c.id === "ecrasement");
+      blesserEnnemi(e, capaciteEcrasement.degats);
       j.vy = touches.saut ? -FORCE_SAUT : -FORCE_SAUT * 0.6;
-    } else {
-      return mourir(false);
+    } else if (j.dureeCharge > 0 && !tombeSurLeDessus) {
+      if (!j.ennemisTouchésParCharge.has(e)) {
+        const capaciteCharge = CAPACITES.find((c) => c.id === "charge");
+        blesserEnnemi(e, capaciteCharge.degats);
+        j.ennemisTouchésParCharge.add(e);
+      }
     }
   }
 
@@ -118,12 +155,6 @@ function frapperBloc(t) {
     sons.bloc();
   }
   if (type === "B" || type === "?") rebonds[t.c + "," + t.r] = 0;
-
-  // Un ennemi posé sur le bloc est éjecté
-  const dessus = { x: t.c * TILE, y: (t.r - 1) * TILE, l: TILE, h: TILE };
-  for (const e of ennemis) {
-    if (!e.mort && chevauche(e, dessus)) ecraserEnnemi(e, true);
-  }
 }
 
 function touchePics(j) {
