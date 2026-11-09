@@ -87,6 +87,7 @@ function zoneDetection(e) {
 
 // Retire des points de vie à un ennemi ; il meurt quand il n'en a plus
 function blesserEnnemi(e, degats) {
+  afficherDegats(e, degats, COULEUR_DEGATS_ENNEMI);
   e.pv -= degats;
   if (e.pv <= 0) ecraserEnnemi(e, true); // éjecté, comme quand on frappe le bloc sous lui
 }
@@ -96,7 +97,5 @@ function ecraserEnnemi(e, ejecte) {
   e.ejecte = ejecte;
   e.timer = ejecte ? 1.5 : 0.5;
   if (ejecte) e.vy = -350;
-  score += 100;
-  ajouterTexte(e.x + e.l / 2, e.y - 10, "+100");
   sons.ecrase();
 }

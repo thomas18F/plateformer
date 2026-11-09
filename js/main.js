@@ -30,6 +30,12 @@ function mettreAJour(dt) {
       majCamera(dt);
       break;
     case "victoire":
+      majEffets(dt);
+      if (appuye.entree) {
+        if (estDernierNiveau()) nouvellePartie();
+        else niveauSuivant();
+      }
+      break;
     case "gameover":
       majEffets(dt);
       if (appuye.entree) nouvellePartie();

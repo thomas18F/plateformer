@@ -10,6 +10,7 @@ function creerJoueur(x, y) {
     dureeCharge: 0, distanceDashRestante: 0, directionDash: 1,
     ennemisTouchésParCharge: new Set(),
     pv: PV_JOUEUR, // points de vie
+    delaiPics: 0,  // tant que c'est > 0, les pics ne blessent pas
     mort: false, timerMort: 0,
   };
 }
@@ -99,15 +100,20 @@ function majJoueur(dt) {
   j.anim += Math.abs(j.vx) * dt;
 
   // Dangers
-  if (j.y > hauteurNiveau) return mourir(true);
-  if (touchePics(j)) return mourir(false);
+  if (j.y > hauteurNiveau) return blesserJoueur(j.pv, true); // tomber dans un trou fait perdre tous les PV
+  j.delaiPics = Math.max(0, j.delaiPics - dt);
+  if (j.delaiPics === 0 && touchePics(j)) {
+    j.delaiPics = DELAI_PICS;
+    j.vy = -FORCE_SAUT * 0.7; // le renard rebondit hors des pics
+    blesserJoueur(DEGATS_PICS);
+    if (j.mort) return;
+  }
 
   // Pièces
   for (const p of pieces) {
     if (chevauche(j, p)) {
       p.prise = true;
       nbPieces++;
-      score += 50;
       sons.piece();
     }
   }
@@ -147,9 +153,7 @@ function frapperBloc(t) {
   if (type === "?") {
     grille[t.r][t.c] = "U"; // bloc vide
     nbPieces++;
-    score += 200;
     effets.push({ type: "piece", x: t.c * TILE + TILE / 2, y: t.r * TILE, vy: -450, t: 0.45 });
-    ajouterTexte(t.c * TILE + TILE / 2, t.r * TILE - 20, "+200");
     sons.piece();
   } else if (type === "B" || type === "U") {
     sons.bloc();
@@ -169,10 +173,12 @@ function touchePics(j) {
   return false;
 }
 
-// Retire des points de vie au renard ; il perd une vie quand il n'en a plus
-function blesserJoueur(degats) {
+// Retire des points de vie au renard ; la partie est perdue quand il n'en a plus.
+// tombeDansLeVide choisit l'animation de mort (chute dans un trou ou petit saut).
+function blesserJoueur(degats, tombeDansLeVide = false) {
+  afficherDegats(joueur, degats, COULEUR_DEGATS_JOUEUR);
   joueur.pv -= degats;
-  if (joueur.pv <= 0) mourir(false);
+  if (joueur.pv <= 0) mourir(tombeDansLeVide);
 }
 
 function mourir(tombeDansLeVide) {
@@ -186,17 +192,11 @@ function mourir(tombeDansLeVide) {
 }
 
 function finDeVie() {
-  vies--;
-  if (vies <= 0) etat = "gameover";
-  else chargerNiveau();
+  etat = "gameover";
 }
 
 function attraperDrapeau() {
   const j = joueur;
-  const hauteur = drapeau.bas - (j.y + j.h);
-  bonusDrapeau = 100 * Math.max(1, Math.ceil(hauteur / TILE));
-  score += bonusDrapeau;
-  ajouterTexte(drapeau.x, j.y - 10, "+" + bonusDrapeau);
   j.vx = 0;
   j.vy = 0;
   j.dir = 1;

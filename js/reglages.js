@@ -12,8 +12,9 @@ const FRICTION_SOL = 1400;
 const CHUTE_MAX = 900;
 const VITESSE_ENNEMI = 60;
 const PV_ENNEMI = 10;         // points de vie de chaque ennemi au départ
-const VIES_DEPART = 3;
-const PV_JOUEUR = 20;         // points de vie du renard (remis au maximum à chaque nouvelle vie)
+const PV_JOUEUR = 20;         // points de vie du renard au début de la partie
+const DEGATS_PICS = 10;       // PV perdus en touchant des pics
+const DELAI_PICS = 1;         // secondes pendant lesquelles les pics ne blessent plus, après une piqûre
 
 // Les tirs (du renard et des ennemis)
 // Capacités disponibles dans le jeu : description indépendante des utilisateurs.
@@ -57,6 +58,10 @@ const CAPACITES_JOUEUR = [
   { action: "capacite3", capacite: "balle-ombre" },
   { action: "capacite4", capacite: "charge" },
 ];
+
+// Couleur du texte « -5 » qui s'affiche au-dessus d'un personnage qui perd des PV
+const COULEUR_DEGATS_JOUEUR = "#ff5c5c"; // le renard est touché
+const COULEUR_DEGATS_ENNEMI = "#ffe27a"; // un ennemi est touché
 
 // Comportement de tir ennemi (détection et délai, indépendants du projectile utilisé).
 const DETECTION_ENNEMI = 256; // un ennemi tire si le renard est devant lui, à sa hauteur, à moins de ça (px)

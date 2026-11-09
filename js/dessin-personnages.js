@@ -127,9 +127,9 @@ function dessinerEffets() {
   for (const f of effets) {
     if (f.type === "piece") {
       dessinerPiece(f.x, f.y, temps * 20);
-    } else {
-      ctx.globalAlpha = Math.min(1, f.t * 2);
-      texteContour(f.texte, f.x, f.y, "#fff", 3);
+    } else if (f.type === "texte") {
+      ctx.globalAlpha = Math.min(1, f.t * 2); // s'efface sur la fin
+      texteContour(f.texte, f.x, f.y, f.couleur, 3);
       ctx.globalAlpha = 1;
     }
   }

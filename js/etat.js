@@ -1,23 +1,23 @@
 // =====================================================
-//  L'état du jeu : score, vies, chargement du niveau, caméra
+//  L'état du jeu : niveau en cours, pièces, chargement du niveau, caméra
 // =====================================================
 
 let etat = "titre";   // titre | jeu | pause | drapeau | victoire | gameover
-let score = 0;
+let numeroNiveau = 0; // position dans NIVEAUX : 0 = niveau 1
 let nbPieces = 0;
-let vies = VIES_DEPART;
 let chrono = 0;       // temps passé dans le niveau
 let temps = 0;        // horloge générale pour les animations
-let bonusDrapeau = 0;
 
 let grille, pieces, ennemis, effets, rebonds, tirs, joueur, drapeau, depart;
 let largeurNiveau, hauteurNiveau;
 const camera = { x: 0 };
 
 function chargerNiveau() {
-  const colonnes = Math.max(...NIVEAU.map((ligne) => ligne.length));
+  const niveau = NIVEAUX[numeroNiveau];
+  const carte = niveau.carte;
+  const colonnes = Math.max(...carte.map((ligne) => ligne.length));
   largeurNiveau = colonnes * TILE;
-  hauteurNiveau = NIVEAU.length * TILE;
+  hauteurNiveau = carte.length * TILE;
   grille = [];
   pieces = [];
   ennemis = [];
@@ -25,8 +25,8 @@ function chargerNiveau() {
   rebonds = {};
   tirs = [];
 
-  for (let r = 0; r < NIVEAU.length; r++) {
-    const ligne = NIVEAU[r].padEnd(colonnes, " ");
+  for (let r = 0; r < carte.length; r++) {
+    const ligne = carte[r].padEnd(colonnes, " ");
     const rangee = [];
     for (let c = 0; c < colonnes; c++) {
       const ch = ligne[c];
@@ -45,8 +45,8 @@ function chargerNiveau() {
     grille.push(rangee);
   }
 
-  // Les ennemis sont déclarés à part, dans la liste ENNEMIS (niveau.js)
-  for (const { colonne, ligne, capacite } of ENNEMIS) {
+  // Les ennemis sont déclarés à part, dans la liste « ennemis » du niveau (niveau.js)
+  for (const { colonne, ligne, capacite } of niveau.ennemis) {
     ennemis.push(creerEnnemi(colonne * TILE, ligne * TILE, capacite));
   }
 
@@ -55,12 +55,23 @@ function chargerNiveau() {
   chrono = 0;
 }
 
+// Une nouvelle partie repart toujours du niveau 1
 function nouvellePartie() {
-  score = 0;
+  numeroNiveau = 0;
   nbPieces = 0;
-  vies = VIES_DEPART;
   chargerNiveau();
   etat = "jeu";
+}
+
+// Le renard garde ses pièces ; ses PV repartent au maximum
+function niveauSuivant() {
+  numeroNiveau++;
+  chargerNiveau();
+  etat = "jeu";
+}
+
+function estDernierNiveau() {
+  return numeroNiveau === NIVEAUX.length - 1;
 }
 
 // ---------- Caméra ----------

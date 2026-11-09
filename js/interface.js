@@ -1,17 +1,16 @@
 // =====================================================
-//  Score en haut de l'écran et écrans (titre, pause, victoire…)
+//  Bandeau en haut de l'écran et écrans (titre, pause, victoire…)
 // =====================================================
 
 function dessinerHUD() {
   ctx.font = "bold 20px system-ui, sans-serif";
   ctx.textBaseline = "middle";
   ctx.textAlign = "left";
-  texteContour(`SCORE  ${String(score).padStart(6, "0")}`, 20, 26);
-  dessinerPiece(262, 26, 0);
-  texteContour(`× ${String(nbPieces).padStart(2, "0")}`, 276, 26);
-  texteContour(`VIES  ${vies}`, 400, 26);
+  texteContour(`PV  ${Math.max(0, joueur.pv)} / ${PV_JOUEUR}`, 20, 26);
+  dessinerPiece(172, 26, 0);
+  texteContour(`× ${String(nbPieces).padStart(2, "0")}`, 186, 26);
   ctx.textAlign = "right";
-  texteContour(`TEMPS  ${Math.floor(chrono)}`, W - 20, 26);
+  texteContour(`NIVEAU  ${numeroNiveau + 1}`, W - 20, 26);
 }
 
 function dessinerEcran() {
@@ -44,24 +43,22 @@ function dessinerEcran() {
       "Active écrasement avec C, puis saute sur un gloup dans les 3 secondes",
       "Active charge avec B : dash de 32 px et attaque latérale pendant 3 secondes",
       "Tape les blocs dorés par en dessous",
-      "Atteins le drapeau au bout du niveau !",
+      `Atteins le drapeau au bout de chacun des ${NIVEAUX.length} niveaux !`,
     ], 240);
     invite("Appuie sur Entrée pour jouer");
   } else if (etat === "pause") {
     titre("Pause", "#fff");
     lignes(["P ou Entrée pour reprendre"], 250);
   } else if (etat === "victoire") {
-    titre("Niveau terminé !", "#7dff9a");
+    const fini = estDernierNiveau();
+    titre(fini ? "Bravo, tu as fini le jeu !" : `Niveau ${numeroNiveau + 1} terminé !`, "#7dff9a");
     lignes([
-      `Score : ${score}`,
       `Pièces : ${nbPieces}`,
       `Temps : ${Math.floor(chrono)} s`,
-      `Bonus drapeau : ${bonusDrapeau}`,
     ], 240);
-    invite("Entrée pour rejouer");
+    invite(fini ? "Entrée pour rejouer" : "Entrée pour le niveau suivant");
   } else if (etat === "gameover") {
     titre("Partie terminée", "#ff7d7d");
-    lignes([`Score : ${score}`], 250);
     invite("Entrée pour recommencer");
   }
 }
