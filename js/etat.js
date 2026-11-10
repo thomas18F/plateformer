@@ -46,8 +46,8 @@ function chargerNiveau() {
   }
 
   // Les ennemis sont déclarés à part, dans la liste « ennemis » du niveau (niveau.js)
-  for (const { colonne, ligne, capacite } of niveau.ennemis) {
-    ennemis.push(creerEnnemi(colonne * TILE, ligne * TILE, capacite));
+  for (const { colonne, ligne, type, capacite } of niveau.ennemis) {
+    ennemis.push(creerEnnemi(colonne * TILE, ligne * TILE, type, capacite));
   }
 
   joueur = creerJoueur(depart.x, depart.y);

@@ -10,11 +10,19 @@ const ACCEL_SOL = 1500;
 const ACCEL_AIR = 900;
 const FRICTION_SOL = 1400;
 const CHUTE_MAX = 900;
-const VITESSE_ENNEMI = 60;
-const PV_ENNEMI = 10;         // points de vie de chaque ennemi au départ
 const PV_JOUEUR = 20;         // points de vie du renard au début de la partie
 const DEGATS_PICS = 10;       // PV perdus en touchant des pics
 const DELAI_PICS = 1;         // secondes pendant lesquelles les pics ne blessent plus, après une piqûre
+
+// Les types d'ennemis qu'on peut mettre dans les niveaux (champ « type » dans niveau.js).
+//   l, h    : taille de la hitbox en px (une case = 32 px)
+//   pv      : points de vie au départ
+//   vitesse : vitesse de marche (px/s)
+// Le dessin de chaque type est dans dessin-personnages.js.
+const TYPES_ENNEMIS = [
+  { id: "gloup", l: 28, h: 24, pv: 10, vitesse: 60 },  // petite boule violette
+  { id: "souche", l: 44, h: 60, pv: 20, vitesse: 40 }, // grosse souche qui marche : presque 2 cases de haut
+];
 
 // Les tirs (du renard et des ennemis)
 // Capacités disponibles dans le jeu : description indépendante des utilisateurs.

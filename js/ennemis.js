@@ -1,11 +1,17 @@
 // =====================================================
-//  Les ennemis (les gloups)
+//  Les ennemis (gloups, souches…)
 // =====================================================
 
-function creerEnnemi(x, y, capaciteId) {
+// x, y : le coin en haut à gauche de la case de départ (en px).
+// L'ennemi est posé en bas de cette case et centré dessus :
+// un grand ennemi déborde donc vers le haut et un peu sur les côtés.
+function creerEnnemi(x, y, typeId, capaciteId) {
+  const type = TYPES_ENNEMIS.find((t) => t.id === typeId) || TYPES_ENNEMIS[0]; // gloup par défaut
   return {
-    x: x + 2, y: y + 8, l: 28, h: 24, vx: -VITESSE_ENNEMI, vy: 0,
-    pv: PV_ENNEMI, // points de vie
+    type, // taille, PV et vitesse viennent de TYPES_ENNEMIS (reglages.js)
+    x: x + (TILE - type.l) / 2, y: y + TILE - type.h, l: type.l, h: type.h,
+    vx: -type.vitesse, vy: 0,
+    pv: type.pv, // points de vie
     capacite: CAPACITES.find((c) => c.id === capaciteId) || null,
     attenteTir: 0, // secondes à attendre avant de pouvoir tirer à nouveau
     actif: false, mort: false, ejecte: false, timer: 0, anim: Math.random() * 10,
@@ -34,7 +40,7 @@ function majEnnemis(dt) {
     const sens = Math.sign(e.vx);
     const res = deplacer(e, dt);
     if (res.mur) {
-      e.vx = -sens * VITESSE_ENNEMI;
+      e.vx = -sens * e.type.vitesse;
     } else if (res.sol) {
       // Demi-tour au bord du vide
       const devant = sens > 0 ? e.x + e.l + 1 : e.x - 1;
@@ -61,8 +67,8 @@ function majEnnemis(dt) {
       const a = ennemis[i], b = ennemis[k];
       if (a.mort || b.mort || !chevauche(a, b)) continue;
       const aGauche = a.x < b.x;
-      a.vx = aGauche ? -VITESSE_ENNEMI : VITESSE_ENNEMI;
-      b.vx = aGauche ? VITESSE_ENNEMI : -VITESSE_ENNEMI;
+      a.vx = aGauche ? -a.type.vitesse : a.type.vitesse;
+      b.vx = aGauche ? b.type.vitesse : -b.type.vitesse;
     }
   }
 
