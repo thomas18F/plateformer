@@ -13,7 +13,7 @@ function tuileA(c, r) {
 }
 
 function estSolide(t) {
-  return t === "#" || t === "X" || t === "B" || t === "?" || t === "U";
+  return t === "#" || t === "R" || t === "X" || t === "B" || t === "?" || t === "U";
 }
 
 // Liste des cases solides qui touchent l'entité

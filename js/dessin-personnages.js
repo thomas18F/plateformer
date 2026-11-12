@@ -24,8 +24,8 @@ function dessinerDrapeau() {
   ellipse(d.x - 12, d.drapY + 15, 4, 4);
 }
 
-function dessinerJoueur() {
-  const j = joueur;
+// Sans rien entre les parenthèses, c'est le renard du niveau ; la carte du monde passe le sien.
+function dessinerJoueur(j = joueur) {
   ctx.save();
   // L'origine est placée entre les pattes du renard
   ctx.translate(Math.round(j.x + j.l / 2), Math.round(j.y + j.h));

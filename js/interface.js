@@ -56,7 +56,7 @@ function dessinerEcran() {
       `Pièces : ${nbPieces}`,
       `Temps : ${Math.floor(chrono)} s`,
     ], 240);
-    invite(fini ? "Entrée pour rejouer" : "Entrée pour le niveau suivant");
+    invite(fini ? "Entrée pour rejouer" : "Entrée pour revenir à la carte");
   } else if (etat === "gameover") {
     titre("Partie terminée", "#ff7d7d");
     invite("Entrée pour recommencer");

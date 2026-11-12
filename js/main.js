@@ -9,6 +9,9 @@ function mettreAJour(dt) {
     case "titre":
       if (appuye.entree || appuye.saut) nouvellePartie();
       break;
+    case "carte":
+      majCarte(dt);
+      break;
     case "jeu":
       if (appuye.pause) { etat = "pause"; break; }
       if (!joueur.mort) chrono += dt;
@@ -33,7 +36,7 @@ function mettreAJour(dt) {
       majEffets(dt);
       if (appuye.entree) {
         if (estDernierNiveau()) nouvellePartie();
-        else niveauSuivant();
+        else retourCarteApresVictoire();
       }
       break;
     case "gameover":
@@ -50,10 +53,16 @@ function dessiner() {
   // Un rectangle de 32 × 32 « pixels du jeu » couvre donc 64 × 64 vrais pixels.
   ctx.setTransform(ZOOM, 0, 0, ZOOM, 0, 0);
 
+  if (etat === "carte") {
+    dessinerCarte(); // la carte du monde prend tout l'écran
+    return;
+  }
+
   dessinerFond();
 
   ctx.save();
   ctx.translate(-Math.round(camera.x), 0); // tout le monde bouge avec la caméra
+  dessinerDecorations(); // en premier : les tuiles et les personnages passent devant
   dessinerDecor();
   dessinerDrapeau();
   for (const p of pieces) dessinerPiece(p.x + p.l / 2, p.y + p.h / 2, temps * 4 + p.x * 0.05);
