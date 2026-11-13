@@ -13,7 +13,7 @@ const CHUTE_MAX = 900;
 const PV_JOUEUR = 20;         // points de vie du renard au début de la partie
 const DEGATS_PICS = 10;       // PV perdus en touchant des pics
 const DELAI_PICS = 1;         // secondes pendant lesquelles les pics ne blessent plus, après une piqûre
-const VITESSE_CARTE = 200;    // vitesse du renard sur la carte du monde (px/s)
+const VITESSE_CARTE = 150;    // vitesse du renard sur la carte du monde (px/s)
 
 // Les types d'ennemis qu'on peut mettre dans les niveaux (champ « type » dans niveau.js).
 //   l, h    : taille de la hitbox en px (une case = 32 px)

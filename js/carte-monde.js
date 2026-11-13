@@ -2,32 +2,54 @@
 //  La carte du monde : les villes (une par niveau) reliées par des chemins
 // =====================================================
 
-// Chaque caractère est une case de 32×32 px : la carte remplit tout l'écran (30 colonnes × 17 lignes).
+// Chaque caractère est une case de CASE_CARTE × CASE_CARTE px (16 × 16) :
+// la carte remplit tout l'écran avec 60 colonnes × 34 lignes.
 //   ~  eau            .  terre
 //   =  chemin         -  pont (un chemin posé sur l'eau)
-//   1 à 9  ville : le chiffre est le numéro du niveau (1 = niveau 1…)
+//   A à Z  ville : la lettre donne le niveau
+//          A=1  B=2  C=3  D=4  E=5  F=6  G=7  H=8  I=9  J=10  K=11  L=12  M=13
+//          N=14 O=15 P=16 Q=17 R=18 S=19 T=20 U=21 V=22 W=23 X=24 Y=25 Z=26
 //
 // Le renard va de ville en ville en suivant les chemins (= et -) :
-// il faut donc que les villes qui se suivent (1 et 2, 2 et 3…) soient reliées par un chemin.
-// Une ville sans niveau (par exemple un 4 alors qu'il n'y a que 3 niveaux) reste fermée.
+// il faut donc que les villes qui se suivent (A et B, B et C…) soient reliées par un chemin.
+// Une ville sans niveau (par exemple D alors qu'il n'y a que 3 niveaux) reste fermée.
+// Garde de l'eau sur les 3 premières lignes et les 2 dernières : les textes s'y affichent.
+const CASE_CARTE = 16;
 const CARTE_MONDE = [
-  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-  "~~~~~~~~.......~~~~~~~~~~..~~~",
-  "~~~~~............~~~~~~~~~~~~~",
-  "~~~...............~~~~~~~~~~~~",
-  "~~........===2====.~~~~~~~~~~~",
-  "~..~~~....=......=.~~~......~~",
-  "~..~~~~...=......=.~~........~",
-  "~...~~....=......=.~~........~",
-  "~.........=......==--===3....~",
-  "~.........=........~~........~",
-  "~.....1====.......~~~.......~~",
-  "~~...............~~~~~......~~",
-  "~~~.............~~~~~~~....~~~",
-  "~~~~~........~~~~~~~~~~~~~~~~~",
-  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
-  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...~~~~~~~~~~~~~~~~~~~~~~",
+  "~~~~~~~~~~~~~~~~~~~~~~~~~....~~~~~~..~~~~~~~.......~~~~~~~~~",
+  "~~~~~~~~~~~~~~~~~~~...........~~~~~~~~~~~~=====N====.~~~~~~~",
+  "~~~~~~~~~~~~.....J========K.....~~~~~~~~~.=........=..~~~~~~",
+  "~~~~~~~~~~.......=........=......~~~~~~~..=........=...~~~~~",
+  "~~~~~~~~~.I=======........======L=-----===M........=...~~~~~",
+  "~~~~~~~...=.......................~~~~~............=....~~~~",
+  "~~~~~~....=......................~~~~~~~...........O====~~~~",
+  "~~~~~.....=~~~..................~~~~~~~~~..............=~~~~",
+  "~~~~..H====~~~~................~~~~~~~~~~~.............=~~~~",
+  "~~~~..=....~~~.................~~~~~~~~~~~~............=~~~~",
+  "~~~...=.......................~~~~~~~~~~~~~~~~.........=.~~~",
+  "~~~...=.....................~~~~~~~~~~~~~~~~~~~........P..~~",
+  "~~~...=.........F=======E..~~~~~~~~~~~.~~~~~~~~~.......=..~~",
+  "~~~...=.........=.......=...~~~~~~~~~~~~~~~~~~~~.......=.~~~",
+  "~~~...=.........=.......=....~~~~~~~~~~~~~~~~~~~..Q=====.~~~",
+  "~~~~..G==========.......======.~~~~~~~~~~~~~~~~~~.=.....~~~~",
+  "~~~~.........................=..~~~~~~~~~~~~~~~~~~=...~~~~~~",
+  "~~~..........................=...~~~~~~~~~~~~~~~~~-~~~~~~~~~",
+  "~~...........................=...~~~~~~~~~~~~~~~~~-~~~~~~~~~",
+  "~~..A.............C==========D...~~~~~~~~~~.......=~~~~~~~~~",
+  "~~..=.............=..............~~~~~~~...S======R..~~~~~~~",
+  "~~~.=.............=.............~~~~~~~....=..........~~~~~~",
+  "~~~~======B========............~~~~~~~~....=====T.....~~~~~~",
+  "~~~~~~~~.....~~~~~~~~~......~~~~~~~~~~~~.............~~~~~~~",
+  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~........~~~~~~~~~",
+  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+  "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
 ];
 
 // ---------- Lecture de la carte ----------
@@ -36,7 +58,12 @@ function caseMonde(c, r) {
 }
 
 function estVille(ch) {
-  return ch >= "1" && ch <= "9";
+  return ch >= "A" && ch <= "Z";
+}
+
+// A → 0 (le niveau 1 est NIVEAUX[0]), B → 1…
+function niveauDeLaVille(ch) {
+  return ch.charCodeAt(0) - "A".charCodeAt(0);
 }
 
 // Les cases où le renard peut marcher
@@ -53,11 +80,12 @@ function estTerre(ch) {
 const VILLES = [];
 CARTE_MONDE.forEach((ligne, r) => {
   [...ligne].forEach((ch, c) => {
-    if (estVille(ch)) VILLES[Number(ch) - 1] = { c, r };
+    if (estVille(ch)) VILLES[niveauDeLaVille(ch)] = { c, r };
   });
 });
 NIVEAUX.forEach((niveau, i) => {
-  if (!VILLES[i]) console.warn(`Le niveau ${i + 1} n'a pas de ville sur la carte du monde : ajoute un ${i + 1} dans CARTE_MONDE (carte-monde.js).`);
+  const lettre = String.fromCharCode("A".charCodeAt(0) + i);
+  if (!VILLES[i]) console.warn(`Le niveau ${i + 1} n'a pas de ville sur la carte du monde : ajoute un ${lettre} dans CARTE_MONDE (carte-monde.js).`);
 });
 
 function villeDuNiveau(n) {
@@ -119,7 +147,7 @@ const MORCEAUX_CHEMIN = [];
 const renardCarte = { x: 0, y: 0, dir: 1, anim: 0, etapes: [] };
 
 function centreCase({ c, r }) {
-  return { x: c * TILE + TILE / 2, y: r * TILE + TILE / 2 };
+  return { x: c * CASE_CARTE + CASE_CARTE / 2, y: r * CASE_CARTE + CASE_CARTE / 2 };
 }
 
 // Affiche la carte, avec le renard posé sur la ville du niveau en cours
@@ -189,8 +217,10 @@ const COULEURS_CARTE = {
   villeFermeeBord: "#5e4848",
 };
 
-// Le renard se tient un peu au-dessus du milieu de la case, pour qu'on voie la ville sous ses pattes
-const DECALAGE_RENARD_CARTE = 10;
+// Sur la carte, le renard est plus petit que dans les niveaux,
+// et se tient un peu au-dessus du milieu de la case, pour qu'on voie la ville sous ses pattes
+const TAILLE_RENARD_CARTE = 0.7;
+const DECALAGE_RENARD_CARTE = 6;
 
 function dessinerCarte() {
   const coul = COULEURS_CARTE;
@@ -200,15 +230,15 @@ function dessinerCarte() {
   // Quelques vaguelettes qui ondulent au large
   ctx.fillStyle = coul.vague;
   pourChaqueCase((ch, x, y, c, r) => {
-    if (ch === "~" && hasard(c * 7 + r * 13) < 0.12) {
-      ctx.fillRect(x + 8 + Math.sin(temps * 1.5 + c) * 3, y + 15, 12, 2);
+    if (ch === "~" && hasard(c * 7 + r * 13) < 0.05) {
+      ctx.fillRect(x + 2 + Math.sin(temps * 1.5 + c) * 2, y + 8, 12, 2);
     }
   });
 
   // Eau claire autour de la terre : chaque case de terre « déborde » un peu sur l'eau
   ctx.fillStyle = coul.hautFond;
   pourChaqueCase((ch, x, y, c, r) => {
-    if (estTerre(ch)) caseDeTerre(x, y, c, r, 6);
+    if (estTerre(ch)) caseDeTerre(x, y, c, r, 4);
   });
 
   // La terre
@@ -217,15 +247,15 @@ function dessinerCarte() {
     ctx.fillStyle = coul.terre;
     caseDeTerre(x, y, c, r, 0);
     const h = hasard(c * 7 + r * 13);
-    if (ch === "." && h < 0.4) {
+    if (ch === "." && h < 0.2) {
       ctx.fillStyle = coul.herbe; // une touffe d'herbe plus claire
-      ellipse(x + 8 + h * 30, y + 10 + h * 25, 5, 3);
+      ellipse(x + 4 + h * 40, y + 5 + h * 30, 3, 2);
     }
   });
 
   // Les chemins : des rectangles jaunes d'un milieu de case à l'autre.
   // D'abord tous les bords (plus larges), puis l'intérieur par-dessus.
-  for (const [largeur, ouvert, ferme] of [[16, coul.cheminBord, coul.cheminFermeBord], [10, coul.chemin, coul.cheminFerme]]) {
+  for (const [largeur, ouvert, ferme] of [[10, coul.cheminBord, coul.cheminFermeBord], [6, coul.chemin, coul.cheminFerme]]) {
     for (const m of MORCEAUX_CHEMIN) {
       ctx.fillStyle = m.route >= 0 && m.route < niveauDebloque ? ouvert : ferme;
       const a = centreCase(m);
@@ -234,32 +264,37 @@ function dessinerCarte() {
     }
   }
 
-  // Les villes : des carrés rouges, avec leur numéro de niveau
-  ctx.font = "bold 15px system-ui, sans-serif";
+  // Les villes : des carrés rouges (un peu plus grands que leur case), avec leur numéro de niveau
+  ctx.font = "bold 11px system-ui, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   pourChaqueCase((ch, x, y) => {
     if (!estVille(ch)) return;
-    const ouverte = Number(ch) - 1 <= niveauDebloque;
+    const n = niveauDeLaVille(ch);
+    const ouverte = n <= niveauDebloque;
     ctx.fillStyle = ouverte ? coul.villeBord : coul.villeFermeeBord;
-    ctx.fillRect(x + 4, y + 4, TILE - 8, TILE - 8);
+    ctx.fillRect(x - 3, y - 3, CASE_CARTE + 6, CASE_CARTE + 6);
     ctx.fillStyle = ouverte ? coul.ville : coul.villeFermee;
-    ctx.fillRect(x + 6, y + 6, TILE - 12, TILE - 12);
+    ctx.fillRect(x - 1, y - 1, CASE_CARTE + 2, CASE_CARTE + 2);
     if (ouverte) {
       ctx.fillStyle = coul.villeReflet;
-      ctx.fillRect(x + 6, y + 6, TILE - 12, 3);
+      ctx.fillRect(x - 1, y - 1, CASE_CARTE + 2, 2);
     }
     ctx.fillStyle = ouverte ? "#fff" : "#d9caca";
-    ctx.fillText(ch, x + TILE / 2, y + TILE / 2 + 1);
+    ctx.fillText(n + 1, x + CASE_CARTE / 2, y + CASE_CARTE / 2 + 1);
   });
 
   // Le renard (le même dessin que dans les niveaux)
   const r = renardCarte;
+  ctx.save();
+  ctx.translate(r.x, r.y - DECALAGE_RENARD_CARTE); // entre ses pattes
+  ctx.scale(TAILLE_RENARD_CARTE, TAILLE_RENARD_CARTE);
   dessinerJoueur({
-    x: r.x - 11, y: r.y - DECALAGE_RENARD_CARTE - 30, l: 22, h: 30,
+    x: -11, y: -30, l: 22, h: 30,
     dir: r.dir, auSol: true, mort: false,
     vx: r.etapes.length > 0 ? VITESSE_CARTE : 0, anim: r.anim,
   });
+  ctx.restore();
 
   dessinerInfosCarte();
 }
@@ -268,9 +303,9 @@ function dessinerCarte() {
 // avec les coins arrondis là où elle touche l'eau sur deux côtés
 function caseDeTerre(x, y, c, r, marge) {
   const eau = (dc, dr) => !estTerre(caseMonde(c + dc, r + dr));
-  const arrondi = (a, b) => (a && b ? 12 + marge : 0);
+  const arrondi = (a, b) => (a && b ? 7 + marge : 0);
   ctx.beginPath();
-  ctx.roundRect(x - marge, y - marge, TILE + 2 * marge, TILE + 2 * marge, [
+  ctx.roundRect(x - marge, y - marge, CASE_CARTE + 2 * marge, CASE_CARTE + 2 * marge, [
     arrondi(eau(0, -1), eau(-1, 0)), // en haut à gauche
     arrondi(eau(0, -1), eau(1, 0)),  // en haut à droite
     arrondi(eau(0, 1), eau(1, 0)),   // en bas à droite
@@ -283,7 +318,7 @@ function caseDeTerre(x, y, c, r, marge) {
 function pourChaqueCase(faire) {
   for (let r = 0; r < CARTE_MONDE.length; r++) {
     for (let c = 0; c < CARTE_MONDE[r].length; c++) {
-      faire(CARTE_MONDE[r][c], c * TILE, r * TILE, c, r);
+      faire(CARTE_MONDE[r][c], c * CASE_CARTE, r * CASE_CARTE, c, r);
     }
   }
 }
