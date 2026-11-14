@@ -24,10 +24,10 @@ function dessinerDrapeau() {
   ellipse(d.x - 12, d.drapY + 15, 4, 4);
 }
 
-// Sans rien entre les parenthèses, c'est le renard du niveau ; la carte du monde passe le sien.
+// Sans rien entre les parenthèses, c'est le personnage du niveau ; la carte du monde passe le sien.
 function dessinerJoueur(j = joueur) {
   ctx.save();
-  // L'origine est placée entre les pattes du renard
+  // L'origine est placée entre les pattes du personnage
   ctx.translate(Math.round(j.x + j.l / 2), Math.round(j.y + j.h));
   if (j.mort) {
     ctx.translate(0, -15);
@@ -39,42 +39,60 @@ function dessinerJoueur(j = joueur) {
   const enMarche = j.auSol && Math.abs(j.vx) > 5;
   const pas = enMarche ? Math.sin(j.anim / 7) : 0;
 
-  // queue
-  ctx.fillStyle = "#e8742a";
-  ellipse(-14, -13 - pas, 9, 5.5, -0.5);
-  ctx.fillStyle = "#fff6e8";
-  ellipse(-21, -17 - pas, 4, 3.5, -0.5);
+  // Queue recourbée et flamme caractéristique de Salamèche.
+  const balancement = pas * 1.5;
+  ctx.strokeStyle = "#e66b2e";
+  ctx.lineWidth = 5;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(-5, -9);
+  ctx.quadraticCurveTo(-17, -11 + balancement, -20, -22 + balancement);
+  ctx.stroke();
+  ctx.fillStyle = "#ffb52e";
+  triangle(-20, -21 + balancement, -25, -29 + balancement, -16, -27 + balancement);
+  ctx.fillStyle = "#ffed8a";
+  triangle(-20, -22 + balancement, -22, -27 + balancement, -18, -26 + balancement);
 
-  // pattes
-  ctx.fillStyle = "#5a3418";
+  // Petites pattes
+  ctx.fillStyle = "#d85d2b";
   if (!j.auSol && !j.mort) {
-    ctx.fillRect(-8, -7, 5, 5);
-    ctx.fillRect(3, -5, 5, 5);
+    ctx.fillRect(-8, -7, 6, 6);
+    ctx.fillRect(3, -6, 6, 6);
   } else {
-    ctx.fillRect(-7 + pas * 3, -6, 5, 6);
-    ctx.fillRect(2 - pas * 3, -6, 5, 6);
+    ctx.fillRect(-8 + pas * 3, -6, 6, 6);
+    ctx.fillRect(2 - pas * 3, -6, 6, 6);
   }
 
-  // corps et ventre
-  ctx.fillStyle = "#e8742a";
+  // Corps orange et ventre crème
+  ctx.fillStyle = "#f47b32";
   ctx.beginPath();
-  ctx.roundRect(-10, -19, 20, 15, 6);
+  ctx.roundRect(-10, -20, 20, 17, 7);
   ctx.fill();
-  ctx.fillStyle = "#fff6e8";
-  ellipse(4, -11, 4.5, 5);
+  ctx.fillStyle = "#ffe0a8";
+  ctx.beginPath();
+  ctx.ellipse(2, -11, 6, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
 
-  // tête et oreilles
-  ctx.fillStyle = "#e8742a";
-  ellipse(3, -22, 8.5, 8);
-  triangle(-4, -27, -1, -37, 3, -29);
-  triangle(4, -29, 9, -37, 11, -26);
+  // Tête arrondie, sans oreilles de renard
+  ctx.fillStyle = "#f47b32";
+  ellipse(4, -25, 11, 10);
+  // Petit museau
+  ellipse(11, -22, 5, 4);
 
-  // museau, truffe, œil
-  ctx.fillStyle = "#fff6e8";
-  ellipse(10, -20, 5, 3.5);
-  ctx.fillStyle = "#222";
-  ellipse(14.5, -21, 1.8, 1.6);
-  ellipse(6, -24, 1.6, 2);
+  // Œil bleu typique avec éclat blanc, et sourire
+  ctx.fillStyle = "#fff";
+  ellipse(7, -27, 3, 4);
+  ctx.fillStyle = "#287fbd";
+  ellipse(8, -26, 1.8, 2.8);
+  ctx.fillStyle = "#172b42";
+  ellipse(8.4, -26, 0.9, 1.8);
+  ctx.fillStyle = "#fff";
+  ellipse(7.5, -27.2, 0.8, 1);
+  ctx.strokeStyle = "#9c3e2b";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(11, -21, 2.5, 0.15, 1.2);
+  ctx.stroke();
 
   ctx.restore();
 }
@@ -100,11 +118,11 @@ function dessinerEnnemi(e) {
   ctx.restore();
 }
 
-// Le gloup : une petite boule violette (hitbox 28 × 24)
+// Aspicot : corps jaune segmenté, nez rose, corne et dard (hitbox 28 × 24)
 function dessinerGloup(e) {
   if (e.mort && !e.ejecte) {
     // écrasé tout plat
-    ctx.fillStyle = "#8e5bd8";
+    ctx.fillStyle = "#d8ad43";
     ellipse(0, -4, 17, 4);
     return;
   }
@@ -112,23 +130,55 @@ function dessinerGloup(e) {
   const s = Math.sin(e.anim * 8) * 0.08; // il se dandine
   ctx.scale(1 + s, 1 - s);
 
-  ctx.fillStyle = "#8e5bd8";
+  // Dard rose à l'arrière, bien distinct du corps.
+  ctx.fillStyle = "#e988a3";
+  triangle(-12, -10, -22, -16, -17, -7);
+
+  // Corps bas et allongé, formé de trois segments jaune vif.
+  ctx.fillStyle = "#f6d64a";
+  ellipse(-8, -8, 7, 7);
+  ellipse(-2, -9, 7, 8);
+  ellipse(4, -10, 7, 9);
+  ctx.strokeStyle = "#d9ae35";
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(-15, 0);
-  ctx.quadraticCurveTo(-16, -26, 0, -26);
-  ctx.quadraticCurveTo(16, -26, 15, 0);
+  ctx.moveTo(-5, -15); ctx.quadraticCurveTo(-8, -9, -5, -3);
+  ctx.moveTo(1, -17); ctx.quadraticCurveTo(-2, -10, 1, -2);
+  ctx.stroke();
+
+  // Tête ronde à l'avant, avec le petit nez rose d'Aspicot.
+  ctx.fillStyle = "#f7d94f";
+  ellipse(9, -12, 8, 8);
+  ctx.fillStyle = "#e987a2";
+  ellipse(15, -10, 3, 2.5);
+
+  // Corne rouge proéminente qui sort du front et pointe vers le haut.
+  ctx.fillStyle = "#cf3f43";
+  ctx.beginPath();
+  ctx.moveTo(5, -17);
+  ctx.quadraticCurveTo(6, -23, 11, -31);
+  ctx.quadraticCurveTo(13, -25, 14, -17);
   ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
-  ellipse(-6, -18, 4, 3);
+  ctx.strokeStyle = "#f06b65";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(9, -20); ctx.lineTo(11, -28);
+  ctx.stroke();
 
-  const regard = Math.sign(e.vx) * 2;
-  ctx.fillStyle = "#fff";
-  ellipse(-5, -12, 4, 4.5);
-  ellipse(5, -12, 4, 4.5);
-  ctx.fillStyle = "#1d1430";
-  ellipse(-5 + regard, -11, 2, 2.5);
-  ellipse(5 + regard, -11, 2, 2.5);
+  // Petit œil noir tourné dans le sens de la marche.
+  const regard = Math.sign(e.vx) * 1.2;
+  ctx.fillStyle = "#302229";
+  ellipse(10 + regard, -14, 1.1, 1.5);
+
+  // Trois minuscules pattes sous le ventre.
+  ctx.strokeStyle = "#d7a936";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(-8, -3); ctx.lineTo(-9, 0);
+  ctx.moveTo(-1, -2); ctx.lineTo(-1, 0);
+  ctx.moveTo(6, -2); ctx.lineTo(7, 0);
+  ctx.stroke();
 }
 
 // La souche : un gros tronc coupé qui marche sur ses racines (hitbox 44 × 60)
