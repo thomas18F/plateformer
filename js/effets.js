@@ -9,11 +9,13 @@ function ajouterTexte(x, y, texte, couleur = "#fff") {
 
 // Affiche « -N » au-dessus du personnage touché, avant de lui retirer ses PV.
 // N = les PV vraiment perdus : jamais plus que ceux qui lui restent.
+// 0 dégât veut dire que la capacité n'a aucun effet sur ses types (×0) : on affiche « Immunisé ».
 // Le texte reste dans l'écran, même si le personnage est tombé dans un trou.
 function afficherDegats(cible, degats, couleur) {
   const pvPerdus = Math.min(degats, cible.pv);
+  const texte = degats === 0 ? "Immunisé" : "-" + pvPerdus;
   const y = Math.min(cible.y - 10, hauteurNiveau - 20);
-  ajouterTexte(cible.x + cible.l / 2, y, "-" + pvPerdus, couleur);
+  ajouterTexte(cible.x + cible.l / 2, y, texte, couleur);
 }
 
 function majEffets(dt) {
@@ -22,7 +24,12 @@ function majEffets(dt) {
     if (f.type === "piece") {
       f.vy += 1400 * dt;
       f.y += f.vy * dt;
-    } else if (f.type === "texte") {
+      // La pièce sortie d'un bloc laisse place à « 3×● », qui monte puis s'efface
+      if (f.t <= 0 && f.gain) {
+        f.type = "gain";
+        f.t = 0.8;
+      }
+    } else if (f.type === "texte" || f.type === "gain") {
       f.y -= 40 * dt;
     }
   }

@@ -12,13 +12,17 @@
 // Les ennemis ne sont pas dans la carte : ils sont dans la liste « ennemis » de chaque niveau.
 // Chaque ennemi apparaît dans la case indiquée, avec les mêmes numéros que la carte :
 // colonne 0 = tout à gauche, ligne 0 = tout en haut.
-// Il est posé en bas de sa case ; si la case est en l'air, il tombe jusqu'au sol.
+// Il est posé en bas de sa case ; si la case est en l'air, il tombe jusqu'au sol (sauf s'il flotte).
 //
-// « type » choisit l'ennemi (la liste complète est TYPES_ENNEMIS, dans reglages.js) :
-//   "gloup"  : petite boule violette, tient dans sa case.
-//   "souche" : grosse souche, presque 2 cases de haut et un peu plus d'une case de large.
-//              Elle est centrée sur sa case et déborde sur la case du dessus
-//              et un peu sur celles de gauche et de droite : laisse ces cases vides.
+// « nom » choisit l'ennemi (la liste complète est POKEDEX, dans reglages.js) :
+//   "aspicot"    : petite chenille jaune, tient dans sa case.
+//   "simularbre" : faux arbre, presque 2 cases de haut et un peu plus d'une case de large.
+//                  Il est centré sur sa case et déborde sur la case du dessus
+//                  et un peu sur celles de gauche et de droite : laisse ces cases vides.
+//   "salameche"  : petit lézard orange, tient dans sa case (comme le joueur). Il va bien avec la capacité "flammeche".
+//   "fantominus" : boule de gaz, tient dans sa case. Il flotte : il reste à la hauteur de sa case,
+//                  passe au-dessus des trous et ne fait demi-tour que contre un mur.
+//                  Il va bien avec la capacité "balle-ombre".
 // « capacite » choisit son tir (voir CAPACITES dans reglages.js).
 //
 // « fond » choisit le paysage qui défile derrière (voir dessinerFond dans dessin-decor.js) :
@@ -26,7 +30,7 @@
 //   "foret"  : les mêmes collines, avec deux rangées d'arbres en plus.
 //   "grotte" : pas de ciel, de la roche brune avec des stalactites et des stalagmites.
 //
-// « nom » (facultatif) s'affiche en haut de la carte du monde quand le renard est sur la ville du niveau.
+// « nom » (facultatif) s'affiche en haut de la carte du monde quand le Pokémon est sur la ville du niveau.
 //
 // La liste « decorations » (facultative) marche pareil, mais ce sont des dessins sans hitbox :
 // le joueur, les ennemis et les tirs passent à travers.
@@ -57,15 +61,15 @@ const NIVEAUX = [
       "########################################   ###########################    ###########################   ######################",
     ],
     ennemis: [
-      { colonne: 18, ligne: 14, type: "souche", capacite: "dard-venin" },
-      { colonne: 24, ligne: 14, type: "gloup", capacite: "dard-venin" },
-      { colonne: 31, ligne: 14, type: "gloup", capacite: "dard-venin" },
-      { colonne: 49, ligne: 10, type: "gloup", capacite: "dard-venin" },
-      { colonne: 55, ligne: 14, type: "gloup", capacite: "dard-venin" },
-      { colonne: 57, ligne: 14, type: "gloup", capacite: "dard-venin" },
-      { colonne: 86, ligne: 14, type: "gloup", capacite: "dard-venin" },
-      { colonne: 95, ligne: 14, type: "gloup", capacite: "dard-venin" },
-      { colonne: 105, ligne: 14, type: "gloup", capacite: "dard-venin" },
+      { colonne: 18, ligne: 14, nom: "salameche", capacite: "flammeche" },
+      { colonne: 24, ligne: 11, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 31, ligne: 9, nom: "fantominus", capacite: "balle-ombre" },
+      { colonne: 49, ligne: 10, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 55, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 57, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 86, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 95, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 105, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
     ],
   },
 
@@ -93,14 +97,14 @@ const NIVEAUX = [
       "################   #################    #####################      #########################    #####################   ####################",
     ],
     ennemis: [
-      { colonne: 33, ligne: 14, type: "gloup", capacite: "dard-venin" },
-      { colonne: 51, ligne: 11, type: "gloup", capacite: "dard-venin" },  // sur le plateau de pierre
-      { colonne: 57, ligne: 14, type: "gloup", capacite: "balle-ombre" },
-      { colonne: 74, ligne: 10, type: "gloup", capacite: "dard-venin" },  // sur la plateforme en briques
-      { colonne: 82, ligne: 14, type: "gloup", capacite: "dard-venin" },
-      { colonne: 88, ligne: 14, type: "gloup", capacite: "balle-ombre" },
-      { colonne: 110, ligne: 14, type: "gloup", capacite: "dard-venin" },
-      { colonne: 114, ligne: 14, type: "gloup", capacite: "balle-ombre" },
+      { colonne: 33, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 51, ligne: 11, nom: "aspicot", capacite: "dard-venin" },  // sur le plateau de pierre
+      { colonne: 57, ligne: 14, nom: "aspicot", capacite: "balle-ombre" },
+      { colonne: 74, ligne: 10, nom: "aspicot", capacite: "dard-venin" },  // sur la plateforme en briques
+      { colonne: 82, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 88, ligne: 14, nom: "aspicot", capacite: "balle-ombre" },
+      { colonne: 110, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 114, ligne: 14, nom: "aspicot", capacite: "balle-ombre" },
     ],
     decorations: [
       { colonne: 9, ligne: 14, type: "arbre" },
@@ -136,14 +140,14 @@ const NIVEAUX = [
       "RRRRRRRRRRRRRRRR   RRRRRRRRRRRRRRRRRRRRRR    RRRRRRRRRRRRRRRRRRRRRRRRRR   RRRRRRRRRRRRRRRRRRRRRR     RRRRRRRRRRRRRRR   RRRRRRRRRRRRRRRRRRRRR",
     ],
     ennemis: [
-      { colonne: 13, ligne: 14, type: "gloup", capacite: "dard-venin" },
-      { colonne: 33, ligne: 14, type: "gloup", capacite: "dard-venin" },  // dans le premier tunnel
-      { colonne: 56, ligne: 10, type: "gloup", capacite: "dard-venin" },  // sur la roche au-dessus des pics
-      { colonne: 66, ligne: 14, type: "gloup", capacite: "balle-ombre" },
-      { colonne: 80, ligne: 14, type: "gloup", capacite: "balle-ombre" }, // dans le deuxième tunnel
-      { colonne: 89, ligne: 14, type: "souche", capacite: "dard-venin" },
-      { colonne: 106, ligne: 14, type: "gloup", capacite: "dard-venin" },
-      { colonne: 121, ligne: 14, type: "gloup", capacite: "balle-ombre" },
+      { colonne: 13, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 33, ligne: 14, nom: "aspicot", capacite: "dard-venin" },  // dans le premier tunnel
+      { colonne: 56, ligne: 10, nom: "aspicot", capacite: "dard-venin" },  // sur la roche au-dessus des pics
+      { colonne: 66, ligne: 14, nom: "aspicot", capacite: "balle-ombre" },
+      { colonne: 80, ligne: 14, nom: "aspicot", capacite: "balle-ombre" }, // dans le deuxième tunnel
+      { colonne: 89, ligne: 14, nom: "simularbre", capacite: "dard-venin" },
+      { colonne: 106, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 121, ligne: 14, nom: "aspicot", capacite: "balle-ombre" },
     ],
   },
 ];

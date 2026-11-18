@@ -1,15 +1,26 @@
 // =====================================================
-//  Le renard : déplacement, saut, dangers, drapeau
+//  Le Pokémon : déplacement, saut, dangers, drapeau
 // =====================================================
 
+// La fiche du POKEDEX du Pokémon que l'on joue (POKEMON_JOUEUR, dans reglages.js)
+function especeDuJoueur() {
+  return POKEDEX.find((p) => p.id === POKEMON_JOUEUR);
+}
+
+// x, y : le coin en haut à gauche de la case de départ (en px).
+// Comme un ennemi, le Pokémon est posé en bas de cette case et centré dessus.
 function creerJoueur(x, y) {
+  const espece = especeDuJoueur();
   return {
-    x, y, l: 22, h: 30, vx: 0, vy: 0, dir: 1,
+    espece, // sa fiche du POKEDEX : taille, PV, types, dessin
+    x: x + (TILE - espece.l) / 2, y: y + TILE - espece.h, l: espece.l, h: espece.h,
+    vx: 0, vy: 0, dir: 1,
     auSol: false, coyote: 0, memoSaut: 0, anim: 0,
     dureeEcrasement: 0,
     dureeCharge: 0, distanceDashRestante: 0, directionDash: 1,
     ennemisTouchésParCharge: new Set(),
-    pv: PV_JOUEUR, // points de vie
+    pv: espece.pv, // points de vie
+    types: [...espece.types], // une copie, comme pour les ennemis : on peut la changer sans toucher au POKEDEX
     delaiPics: 0,  // tant que c'est > 0, les pics ne blessent pas
     mort: false, timerMort: 0,
   };
@@ -23,7 +34,7 @@ function majJoueur(dt) {
   const j = joueur;
 
   if (j.mort) {
-    j.vy = Math.min(j.vy + GRAVITE * dt, CHUTE_MAX);
+    appliquerGravite(j, dt);
     j.y += j.vy * dt;
     j.timerMort -= dt;
     if (j.timerMort <= 0) finDeVie();
@@ -66,8 +77,8 @@ function majJoueur(dt) {
     if (appuye[attribution.action]) {
       const capacite = CAPACITES.find((c) => c.id === attribution.capacite);
       if (!capacite) continue;
-      if (capacite.type === "ecrasement") j.dureeEcrasement = capacite.duree;
-      else if (capacite.type === "charge") {
+      if (capacite.effet === "ecrasement") j.dureeEcrasement = capacite.duree;
+      else if (capacite.effet === "charge") {
         j.dureeCharge = capacite.duree;
         j.distanceDashRestante = capacite.distanceDash;
         j.directionDash = j.dir;
@@ -78,9 +89,7 @@ function majJoueur(dt) {
   }
 
   // Gravité : plus forte si on relâche le saut, pour faire des petits sauts
-  let g = GRAVITE;
-  if (j.vy < 0 && !touches.saut) g *= 2.5;
-  j.vy = Math.min(j.vy + g * dt, CHUTE_MAX);
+  appliquerGravite(j, dt, j.vy < 0 && !touches.saut ? 2.5 : 1);
 
   // Collisions avec le décor
   const basAvant = j.y + j.h;
@@ -104,7 +113,7 @@ function majJoueur(dt) {
   j.delaiPics = Math.max(0, j.delaiPics - dt);
   if (j.delaiPics === 0 && touchePics(j)) {
     j.delaiPics = DELAI_PICS;
-    j.vy = -FORCE_SAUT * 0.7; // le renard rebondit hors des pics
+    j.vy = -FORCE_SAUT * 0.7; // le Pokémon rebondit hors des pics
     blesserJoueur(DEGATS_PICS);
     if (j.mort) return;
   }
@@ -126,12 +135,12 @@ function majJoueur(dt) {
     const tombeSurLeDessus = tombait && basAvant <= e.y + 12;
     if (tombeSurLeDessus && j.dureeEcrasement > 0) {
       const capaciteEcrasement = CAPACITES.find((c) => c.id === "ecrasement");
-      blesserEnnemi(e, capaciteEcrasement.degats);
+      blesserEnnemi(e, degatsSelonTypes(capaciteEcrasement.degats, capaciteEcrasement.type, e));
       j.vy = touches.saut ? -FORCE_SAUT : -FORCE_SAUT * 0.6;
     } else if (j.dureeCharge > 0 && !tombeSurLeDessus) {
       if (!j.ennemisTouchésParCharge.has(e)) {
         const capaciteCharge = CAPACITES.find((c) => c.id === "charge");
-        blesserEnnemi(e, capaciteCharge.degats);
+        blesserEnnemi(e, degatsSelonTypes(capaciteCharge.degats, capaciteCharge.type, e));
         j.ennemisTouchésParCharge.add(e);
       }
     }
@@ -152,8 +161,8 @@ function frapperBloc(t) {
   const type = grille[t.r][t.c];
   if (type === "?") {
     grille[t.r][t.c] = "U"; // bloc vide
-    nbPieces++;
-    effets.push({ type: "piece", x: t.c * TILE + TILE / 2, y: t.r * TILE, vy: -450, t: 0.45 });
+    nbPieces += PIECES_BLOC;
+    effets.push({ type: "piece", x: t.c * TILE + TILE / 2, y: t.r * TILE, vy: -450, t: 0.45, gain: PIECES_BLOC });
     sons.piece();
   } else if (type === "B" || type === "U") {
     sons.bloc();
@@ -173,7 +182,7 @@ function touchePics(j) {
   return false;
 }
 
-// Retire des points de vie au renard ; la partie est perdue quand il n'en a plus.
+// Retire des points de vie au Pokémon ; la partie est perdue quand il n'en a plus.
 // tombeDansLeVide choisit l'animation de mort (chute dans un trou ou petit saut).
 function blesserJoueur(degats, tombeDansLeVide = false) {
   afficherDegats(joueur, degats, COULEUR_DEGATS_JOUEUR);
@@ -205,7 +214,7 @@ function attraperDrapeau() {
   sons.drapeau();
 }
 
-// Le renard et le fanion glissent le long du mât
+// Le Pokémon et le fanion glissent le long du mât
 function majDrapeau(dt) {
   const j = joueur;
   j.y = Math.min(j.y + 260 * dt, drapeau.bas - j.h);

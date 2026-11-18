@@ -6,7 +6,7 @@ function dessinerHUD() {
   ctx.font = "bold 20px system-ui, sans-serif";
   ctx.textBaseline = "middle";
   ctx.textAlign = "left";
-  texteContour(`PV  ${Math.max(0, joueur.pv)} / ${PV_JOUEUR}`, 20, 26);
+  texteContour(`PV  ${Math.max(0, joueur.pv)} / ${joueur.espece.pv}`, 20, 26);
   dessinerPiece(172, 26, 0);
   texteContour(`× ${String(nbPieces).padStart(2, "0")}`, 186, 26);
   ctx.textAlign = "right";
@@ -36,11 +36,11 @@ function dessinerEcran() {
   };
 
   if (etat === "titre") {
-    titre("Le Petit Renard", "#ffb347");
+    titre("Super Pokémon Plateformer", "#ffb347");
     lignes([
       "← → : se déplacer       X : flammèche       C : écrasement       V : balle ombre       B : charge",
       "Espace ou ↑ : sauter (reste appuyé pour sauter plus haut)",
-      "Active écrasement avec C, puis saute sur un gloup dans les 3 secondes",
+      "Active écrasement avec C, puis saute sur un aspicot dans les 3 secondes",
       "Active charge avec B : dash de 32 px et attaque latérale pendant 3 secondes",
       "Tape les blocs dorés par en dessous",
       `Atteins le drapeau au bout de chacun des ${NIVEAUX.length} niveaux !`,

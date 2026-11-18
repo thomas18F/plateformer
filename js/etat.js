@@ -36,7 +36,7 @@ function chargerNiveau() {
       let tuile = " ";
       if ("#RXB?^".includes(ch)) tuile = ch;
       else if (ch === "o") pieces.push({ x: x + 8, y: y + 6, l: 16, h: 20 });
-      else if (ch === "P") depart = { x: x + 5, y: y + 2 };
+      else if (ch === "P") depart = { x, y }; // le coin de la case : creerJoueur pose le Pokémon en bas, au milieu
       else if (ch === "F") {
         tuile = "X"; // socle du drapeau
         drapeau = { x: x + 13, l: 6, haut: (r - 9) * TILE + 8, bas: y, drapY: (r - 9) * TILE + 16 };
@@ -47,8 +47,8 @@ function chargerNiveau() {
   }
 
   // Les ennemis sont déclarés à part, dans la liste « ennemis » du niveau (niveau.js)
-  for (const { colonne, ligne, type, capacite } of niveau.ennemis) {
-    ennemis.push(creerEnnemi(colonne * TILE, ligne * TILE, type, capacite));
+  for (const { colonne, ligne, nom, capacite } of niveau.ennemis) {
+    ennemis.push(creerEnnemi(colonne * TILE, ligne * TILE, nom, capacite));
   }
 
   // Pareil pour les décorations (arbres…), dans la liste « decorations » du niveau.
@@ -73,9 +73,9 @@ function nouvellePartie() {
   ouvrirCarte();
 }
 
-// Après une victoire, on revient sur la carte. Le renard garde ses pièces ;
+// Après une victoire, on revient sur la carte. Le Pokémon garde ses pièces ;
 // ses PV repartiront au maximum dans le prochain niveau.
-// Si c'était la ville la plus loin, la suivante s'ouvre et le renard y marche tout seul.
+// Si c'était la ville la plus loin, la suivante s'ouvre et le Pokémon y marche tout seul.
 function retourCarteApresVictoire() {
   ouvrirCarte();
   if (numeroNiveau === niveauDebloque) {

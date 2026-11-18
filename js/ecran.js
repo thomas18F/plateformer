@@ -29,6 +29,24 @@ function triangle(x1, y1, x2, y2, x3, y3) {
   ctx.fill();
 }
 
+// Ajoute une ellipse au chemin en cours, sans la relier par un trait au morceau précédent.
+// Sert à construire une forme en plusieurs ronds (ex. une tête + un museau).
+function ajouterEllipse(x, y, rx, ry) {
+  ctx.moveTo(x + rx, y);
+  ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+}
+
+// Remplit le chemin en cours avec un contour foncé autour, façon dessin animé.
+// Le trait est tracé d'abord, le remplissage ensuite par-dessus :
+// seule la moitié extérieure du trait reste visible, même si la forme est faite de plusieurs ronds.
+function remplirAvecContour(couleur, contour, epaisseur = 2) {
+  ctx.lineWidth = epaisseur;
+  ctx.strokeStyle = contour;
+  ctx.stroke();
+  ctx.fillStyle = couleur;
+  ctx.fill();
+}
+
 function texteContour(texte, x, y, couleur = "#fff", epaisseur = 4) {
   ctx.lineJoin = "round";
   ctx.lineWidth = epaisseur;

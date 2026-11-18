@@ -10,7 +10,7 @@
 //          A=1  B=2  C=3  D=4  E=5  F=6  G=7  H=8  I=9  J=10  K=11  L=12  M=13
 //          N=14 O=15 P=16 Q=17 R=18 S=19 T=20 U=21 V=22 W=23 X=24 Y=25 Z=26
 //
-// Le renard va de ville en ville en suivant les chemins (= et -) :
+// Le Pokémon va de ville en ville en suivant les chemins (= et -) :
 // il faut donc que les villes qui se suivent (A et B, B et C…) soient reliées par un chemin.
 // Une ville sans niveau (par exemple D alors qu'il n'y a que 3 niveaux) reste fermée.
 // Garde de l'eau sur les 3 premières lignes et les 2 dernières : les textes s'y affichent.
@@ -66,7 +66,7 @@ function niveauDeLaVille(ch) {
   return ch.charCodeAt(0) - "A".charCodeAt(0);
 }
 
-// Les cases où le renard peut marcher
+// Les cases où le Pokémon peut marcher
 function estChemin(ch) {
   return ch === "=" || ch === "-" || estVille(ch);
 }
@@ -141,31 +141,31 @@ const MORCEAUX_CHEMIN = [];
   }
 }
 
-// ---------- Le renard sur la carte ----------
+// ---------- Le Pokémon sur la carte ----------
 // x, y : le point du chemin où il se trouve (milieu d'une case quand il est arrêté).
 // etapes : les points qu'il lui reste à atteindre ; vide quand il ne bouge pas.
-const renardCarte = { x: 0, y: 0, dir: 1, anim: 0, etapes: [] };
+const pokemonCarte = { x: 0, y: 0, dir: 1, anim: 0, etapes: [] };
 
 function centreCase({ c, r }) {
   return { x: c * CASE_CARTE + CASE_CARTE / 2, y: r * CASE_CARTE + CASE_CARTE / 2 };
 }
 
-// Affiche la carte, avec le renard posé sur la ville du niveau en cours
+// Affiche la carte, avec le Pokémon posé sur la ville du niveau en cours
 function ouvrirCarte() {
-  Object.assign(renardCarte, centreCase(villeDuNiveau(numeroNiveau)));
-  renardCarte.etapes = [];
+  Object.assign(pokemonCarte, centreCase(villeDuNiveau(numeroNiveau)));
+  pokemonCarte.etapes = [];
   etat = "carte";
 }
 
-// Le renard part vers la ville du niveau n en suivant les chemins
+// Le Pokémon part vers la ville du niveau n en suivant les chemins
 function partirVers(n) {
   const route = trouverRoute(villeDuNiveau(numeroNiveau), villeDuNiveau(n));
-  renardCarte.etapes = route.slice(1).map(centreCase);
+  pokemonCarte.etapes = route.slice(1).map(centreCase);
   numeroNiveau = n;
 }
 
 function majCarte(dt) {
-  const r = renardCarte;
+  const r = pokemonCarte;
 
   // En marche : il avance vers la prochaine étape, sans écouter les touches
   if (r.etapes.length > 0) {
@@ -217,10 +217,10 @@ const COULEURS_CARTE = {
   villeFermeeBord: "#5e4848",
 };
 
-// Sur la carte, le renard est plus petit que dans les niveaux,
+// Sur la carte, le Pokémon est plus petit que dans les niveaux,
 // et se tient un peu au-dessus du milieu de la case, pour qu'on voie la ville sous ses pattes
-const TAILLE_RENARD_CARTE = 0.7;
-const DECALAGE_RENARD_CARTE = 6;
+const TAILLE_POKEMON_CARTE = 0.7;
+const DECALAGE_POKEMON_CARTE = 6;
 
 function dessinerCarte() {
   const coul = COULEURS_CARTE;
@@ -284,13 +284,14 @@ function dessinerCarte() {
     ctx.fillText(n + 1, x + CASE_CARTE / 2, y + CASE_CARTE / 2 + 1);
   });
 
-  // Le renard (le même dessin que dans les niveaux)
-  const r = renardCarte;
+  // Le Pokémon (le même dessin que dans les niveaux)
+  const r = pokemonCarte;
   ctx.save();
-  ctx.translate(r.x, r.y - DECALAGE_RENARD_CARTE); // entre ses pattes
-  ctx.scale(TAILLE_RENARD_CARTE, TAILLE_RENARD_CARTE);
+  ctx.translate(r.x, r.y - DECALAGE_POKEMON_CARTE); // entre ses pattes
+  ctx.scale(TAILLE_POKEMON_CARTE, TAILLE_POKEMON_CARTE);
+  const espece = especeDuJoueur();
   dessinerJoueur({
-    x: -11, y: -30, l: 22, h: 30,
+    espece, x: -espece.l / 2, y: -espece.h, l: espece.l, h: espece.h,
     dir: r.dir, auSol: true, mort: false,
     vx: r.etapes.length > 0 ? VITESSE_CARTE : 0, anim: r.anim,
   });

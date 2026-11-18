@@ -1,17 +1,18 @@
 // =====================================================
-//  Les ennemis (gloups, souches…)
+//  Les ennemis (aspicots, simularbres…)
 // =====================================================
 
 // x, y : le coin en haut à gauche de la case de départ (en px).
 // L'ennemi est posé en bas de cette case et centré dessus :
 // un grand ennemi déborde donc vers le haut et un peu sur les côtés.
-function creerEnnemi(x, y, typeId, capaciteId) {
-  const type = TYPES_ENNEMIS.find((t) => t.id === typeId) || TYPES_ENNEMIS[0]; // gloup par défaut
+function creerEnnemi(x, y, nom, capaciteId) {
+  const espece = POKEDEX.find((p) => p.id === nom) || POKEDEX[0]; // aspicot par défaut
   return {
-    type, // taille, PV et vitesse viennent de TYPES_ENNEMIS (reglages.js)
-    x: x + (TILE - type.l) / 2, y: y + TILE - type.h, l: type.l, h: type.h,
-    vx: -type.vitesse, vy: 0,
-    pv: type.pv, // points de vie
+    espece, // sa fiche du POKEDEX (reglages.js) : taille, PV, vitesse, gravité…
+    x: x + (TILE - espece.l) / 2, y: y + TILE - espece.h, l: espece.l, h: espece.h,
+    vx: -espece.vitesse, vy: 0,
+    pv: espece.pv, // points de vie
+    types: [...espece.types], // une copie : chaque ennemi a sa propre liste, qu'on peut changer sans toucher au POKEDEX
     capacite: CAPACITES.find((c) => c.id === capaciteId) || null,
     attenteTir: 0, // secondes à attendre avant de pouvoir tirer à nouveau
     actif: false, mort: false, ejecte: false, timer: 0, anim: Math.random() * 10,
@@ -23,7 +24,7 @@ function majEnnemis(dt) {
     if (e.mort) {
       e.timer -= dt;
       if (e.ejecte) {
-        e.vy += GRAVITE * dt;
+        appliquerGravite(e, dt); // gravité normale : même un ennemi qui flotte retombe quand il est éjecté
         e.y += e.vy * dt;
       }
       continue;
@@ -36,11 +37,11 @@ function majEnnemis(dt) {
     }
 
     e.anim += dt;
-    e.vy = Math.min(e.vy + GRAVITE * dt, CHUTE_MAX);
+    appliquerGravite(e, dt, e.espece.gravite); // 0 pour un ennemi qui flotte : il reste à sa hauteur
     const sens = Math.sign(e.vx);
     const res = deplacer(e, dt);
     if (res.mur) {
-      e.vx = -sens * e.type.vitesse;
+      e.vx = -sens * e.espece.vitesse;
     } else if (res.sol) {
       // Demi-tour au bord du vide
       const devant = sens > 0 ? e.x + e.l + 1 : e.x - 1;
@@ -53,7 +54,7 @@ function majEnnemis(dt) {
       continue;
     }
 
-    // Tir : si le renard est dans la zone de détection et que le délai est écoulé
+    // Tir : si le Pokémon est dans la zone de détection et que le délai est écoulé
     e.attenteTir = Math.max(0, e.attenteTir - dt);
     if (e.capacite && e.attenteTir === 0 && chevauche(zoneDetection(e), joueur)) {
       activerCapacite(e, e.capacite, "ennemi");
@@ -67,8 +68,8 @@ function majEnnemis(dt) {
       const a = ennemis[i], b = ennemis[k];
       if (a.mort || b.mort || !chevauche(a, b)) continue;
       const aGauche = a.x < b.x;
-      a.vx = aGauche ? -a.type.vitesse : a.type.vitesse;
-      b.vx = aGauche ? b.type.vitesse : -b.type.vitesse;
+      a.vx = aGauche ? -a.espece.vitesse : a.espece.vitesse;
+      b.vx = aGauche ? b.espece.vitesse : -b.espece.vitesse;
     }
   }
 

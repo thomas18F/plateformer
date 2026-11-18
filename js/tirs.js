@@ -1,11 +1,12 @@
 // =====================================================
-//  Les tirs du renard (cercles rouges, touche X)
+//  Les tirs du Pokémon (cercles rouges, touche X)
 //  et ceux des ennemis (triangles violets), tous dans la même liste.
 //  Le champ « camp » dit qui a tiré : "joueur" ou "ennemi".
 // =====================================================
 
-// Crée un tir qui part de l'avant du tireur (renard ou ennemi), à mi-hauteur
-function creerTir(tireur, sens, camp, projectile) {
+// Crée un tir qui part de l'avant du tireur (Pokémon ou ennemi), à mi-hauteur
+function creerTir(tireur, sens, camp, capacite) {
+  const projectile = capacite.projectile;
   tirs.push({
     x: sens > 0 ? tireur.x + tireur.l : tireur.x,
     y: tireur.y + tireur.h / 2,
@@ -17,15 +18,16 @@ function creerTir(tireur, sens, camp, projectile) {
     spectral: projectile.spectral,
     vitesse: projectile.vitesse, // px/s
     portee: projectile.portee,  // distance maximale (px)
-    degats: projectile.degats,
+    degats: projectile.degats,   // avant l'efficacité des types
+    type: capacite.type,         // le type de la capacité (« feu »…), pour l'efficacité
     parcouru: 0,  // distance déjà parcourue (px)
   });
 }
 
-// Le renard tire dans la direction où il regarde
+// Le Pokémon tire dans la direction où il regarde
 function activerCapacite(utilisateur, capacite, camp) {
   const sens = camp === "joueur" ? utilisateur.dir : sensEnnemi(utilisateur);
-  creerTir(utilisateur, sens, camp, capacite.projectile);
+  creerTir(utilisateur, sens, camp, capacite);
   if (camp === "joueur") sons.tir();
   else sons.tirEnnemi();
 }
@@ -33,7 +35,7 @@ function activerCapacite(utilisateur, capacite, camp) {
 // Fait avancer les tirs en ligne droite, et les retire :
 //  - après leur portée,
 //  - s'ils rencontrent un bloc (sauf s'ils sont spectraux),
-//  - s'ils touchent leur cible : un ennemi pour un tir du renard, le renard pour un tir ennemi.
+//  - s'ils touchent leur cible : un ennemi pour un tir du Pokémon, le Pokémon pour un tir ennemi.
 // Les tirs ne se touchent pas entre eux : ils se croisent.
 function majTirs(dt) {
   for (const tir of tirs) {
@@ -50,12 +52,12 @@ function majTirs(dt) {
     if (tir.camp === "joueur") {
       const ennemi = ennemiTouchePar(tir);
       if (ennemi) {
-        blesserEnnemi(ennemi, tir.degats);
+        blesserEnnemi(ennemi, degatsSelonTypes(tir.degats, tir.type, ennemi));
         tir.arrete = true; // un tir ne blesse qu'un seul ennemi
       }
     } else if (etat === "jeu" && chevauche(hitboxTir(tir), joueur)) {
       // (pas pendant la descente du drapeau : le niveau est déjà gagné)
-      blesserJoueur(tir.degats);
+      blesserJoueur(degatsSelonTypes(tir.degats, tir.type, joueur));
       tir.arrete = true;
     }
   }
@@ -68,7 +70,7 @@ function hitboxTir(tir) {
 }
 
 // Le tir touche-t-il un bloc solide (un bloc qui a une hitbox) ?
-// On réutilise la même fonction que pour les collisions du renard et des ennemis.
+// On réutilise la même fonction que pour les collisions du Pokémon et des ennemis.
 function tirToucheLeDecor(tir) {
   return tuilesTouchees(hitboxTir(tir)).length > 0;
 }

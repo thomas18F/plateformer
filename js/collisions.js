@@ -31,6 +31,12 @@ function tuilesTouchees(ent) {
   return liste;
 }
 
+// La gravité, la même pour toutes les entités (Pokémon, ennemis, vivants ou morts).
+// facteur : pour la renforcer ou l'affaiblir (ex. 2.5 pour les petits sauts du Pokémon).
+function appliquerGravite(ent, dt, facteur = 1) {
+  ent.vy = Math.min(ent.vy + GRAVITE * facteur * dt, CHUTE_MAX);
+}
+
 // Déplace une entité et la fait buter contre le décor.
 // On traite l'axe X puis l'axe Y séparément : c'est plus simple et plus fiable.
 function deplacer(ent, dt) {
