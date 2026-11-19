@@ -32,7 +32,7 @@ const POKEDEX = [
 ];
 
 // Le Pokémon que l'on joue : un id du POKEDEX. Sa taille, ses PV, ses types et son dessin viennent de sa fiche.
-const POKEMON_JOUEUR = "fantominus";
+const POKEMON_JOUEUR = "salameche";
 
 // Les tirs (du Pokémon et des ennemis)
 // Capacités disponibles dans le jeu : description indépendante des utilisateurs.
@@ -47,7 +47,7 @@ const CAPACITES = [
   },
   {
     id: "dard-venin",
-    type: "normal",
+    type: "poison",
     effet: "projectile",
     projectile: { forme: "triangle", couleur: "#6d28d9", rayon: 5, spectral: false, vitesse: 200, portee: 320, degats: 5 },
   },
