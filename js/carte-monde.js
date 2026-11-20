@@ -12,7 +12,7 @@
 //
 // Le Pokémon va de ville en ville en suivant les chemins (= et -) :
 // il faut donc que les villes qui se suivent (A et B, B et C…) soient reliées par un chemin.
-// Une ville sans niveau (par exemple D alors qu'il n'y a que 3 niveaux) reste fermée.
+// Une ville sans niveau (par exemple F alors qu'il n'y a que 5 niveaux) reste fermée.
 // Garde de l'eau sur les 3 premières lignes et les 2 dernières : les textes s'y affichent.
 const CASE_CARTE = 16;
 const CARTE_MONDE = [

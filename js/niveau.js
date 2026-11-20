@@ -150,4 +150,78 @@ const NIVEAUX = [
       { colonne: 121, ligne: 14, nom: "aspicot", capacite: "balle-ombre" },
     ],
   },
+
+  // ---------- Niveau 4 : retour dans la plaine, avec des escaliers et un fantominus dans un bac en briques ----------
+  {
+    nom: "Les collines",
+    fond: "plaine",
+    carte: [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "                                         ooo                ooooo                                    ooo",
+      "                                                                                      oo",
+      "                                                 ooo                                                                             XX",
+      "       ooo   ?                          BB?BB             B       B    oooo          X  X           B?B?B                       XXX",
+      "                      ooo           X            BBB      BBBB?BBBB                 XX  XX                            ooo      XXXX",
+      "                              X     X                                              XXX  XXX                                   XXXXX",
+      "   P                          X     X                                   ^^        XXXX  XXXX                                 XXXXXX     F",
+      "######################   #######################     #################################  ##############################   ####################",
+      "######################   #######################     #################################  ##############################   ####################",
+    ],
+    ennemis: [
+      { colonne: 17, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 33, ligne: 14, nom: "salameche", capacite: "flammeche" },   // coincé entre les deux colonnes de pierre
+      { colonne: 42, ligne: 10, nom: "aspicot", capacite: "dard-venin" },    // sur les briques
+      { colonne: 55, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 62, ligne: 11, nom: "fantominus", capacite: "balle-ombre" }, // dans le bac : il va et vient entre les deux briques du bord
+      { colonne: 77, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 96, ligne: 14, nom: "salameche", capacite: "flammeche" },
+      { colonne: 108, ligne: 14, nom: "simularbre", capacite: "dard-venin" },
+      { colonne: 114, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+    ],
+  },
+
+  // ---------- Niveau 5 : la grande plaine, avec une grande fosse à traverser sur des plateformes ----------
+  {
+    nom: "La grande plaine",
+    fond: "plaine",
+    carte: [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "                                                  ooo                     ooo",
+      "                                                                                                                ooo                ooo",
+      "",
+      "                                   ooo            B?B  oo                B?B?B                                                                           XX",
+      "       ooo  ?B?          oooo                                                                 ooo              X   X              BB?BB                 XXX",
+      "                                              BB       BB             X         X                             XX   XX                         ooo      XXXX",
+      "                                  X   X                               X         X                            XXX   XXX                                XXXXX",
+      "   P                              X^^^X                               X         X                           XXXX   XXXX                  ^^          XXXXXX     F",
+      "#########################    ###############               ##################################     ##############   ###########################   ####################",
+      "#########################    ###############               ##################################     ##############   ###########################   ####################",
+    ],
+    ennemis: [
+      { colonne: 18, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 21, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 51, ligne: 9, nom: "aspicot", capacite: "dard-venin" },      // sur la plateforme du milieu de la fosse
+      { colonne: 63, ligne: 14, nom: "salameche", capacite: "flammeche" },
+      { colonne: 75, ligne: 14, nom: "fantominus", capacite: "balle-ombre" }, // dans l'enclos, à la hauteur du Pokémon
+      { colonne: 86, ligne: 14, nom: "aspicot", capacite: "balle-ombre" },
+      { colonne: 89, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 103, ligne: 14, nom: "simularbre", capacite: "dard-venin" },
+      { colonne: 123, ligne: 14, nom: "salameche", capacite: "flammeche" },
+      { colonne: 132, ligne: 10, nom: "aspicot", capacite: "dard-venin" },    // sur les briques
+      { colonne: 135, ligne: 14, nom: "aspicot", capacite: "balle-ombre" },
+    ],
+  },
 ];
