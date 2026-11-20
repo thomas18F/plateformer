@@ -22,6 +22,7 @@ function creerJoueur(x, y) {
     pv: espece.pv, // points de vie
     types: [...espece.types], // une copie, comme pour les ennemis : on peut la changer sans toucher au POKEDEX
     delaiPics: 0,  // tant que c'est > 0, les pics ne blessent pas
+    statut: null,  // brûlure, poison… (voir statuts.js)
     mort: false, timerMort: 0,
   };
 }
@@ -117,6 +118,8 @@ function majJoueur(dt) {
     blesserJoueur(DEGATS_PICS);
     if (j.mort) return;
   }
+  majStatut(j, dt); // la brûlure ou le poison font perdre des PV de temps en temps
+  if (j.mort) return;
 
   // Pièces
   for (const p of pieces) {
@@ -135,12 +138,12 @@ function majJoueur(dt) {
     const tombeSurLeDessus = tombait && basAvant <= e.y + 12;
     if (tombeSurLeDessus && j.dureeEcrasement > 0) {
       const capaciteEcrasement = CAPACITES.find((c) => c.id === "ecrasement");
-      blesserEnnemi(e, degatsSelonTypes(capaciteEcrasement.degats, capaciteEcrasement.type, e));
+      subirCapacite(e, capaciteEcrasement, capaciteEcrasement.degats);
       j.vy = touches.saut ? -FORCE_SAUT : -FORCE_SAUT * 0.6;
     } else if (j.dureeCharge > 0 && !tombeSurLeDessus) {
       if (!j.ennemisTouchésParCharge.has(e)) {
         const capaciteCharge = CAPACITES.find((c) => c.id === "charge");
-        blesserEnnemi(e, degatsSelonTypes(capaciteCharge.degats, capaciteCharge.type, e));
+        subirCapacite(e, capaciteCharge, capaciteCharge.degats);
         j.ennemisTouchésParCharge.add(e);
       }
     }
@@ -184,8 +187,9 @@ function touchePics(j) {
 
 // Retire des points de vie au Pokémon ; la partie est perdue quand il n'en a plus.
 // tombeDansLeVide choisit l'animation de mort (chute dans un trou ou petit saut).
-function blesserJoueur(degats, tombeDansLeVide = false) {
-  afficherDegats(joueur, degats, COULEUR_DEGATS_JOUEUR);
+// couleur : celle du « -N » (par exemple la couleur du statut, pour les dégâts de brûlure ou de poison).
+function blesserJoueur(degats, tombeDansLeVide = false, couleur = COULEUR_DEGATS_JOUEUR) {
+  afficherDegats(joueur, degats, couleur);
   joueur.pv -= degats;
   if (joueur.pv <= 0) mourir(tombeDansLeVide);
 }

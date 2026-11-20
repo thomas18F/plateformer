@@ -38,8 +38,8 @@ function dessinerEcran() {
   if (etat === "titre") {
     titre("Super Pokémon Plateformer", "#ffb347");
     lignes([
-      "← → : se déplacer       X : flammèche       C : écrasement       V : balle ombre       B : charge",
-      "Espace ou ↑ : sauter (reste appuyé pour sauter plus haut)",
+      "← → : se déplacer       Espace ou ↑ : sauter (reste appuyé pour sauter plus haut)",
+      "X : flammèche     C : écrasement     V : balle ombre     B : charge     N : anti-air (tire vers le haut)",
       "Active écrasement avec C, puis saute sur un aspicot dans les 3 secondes",
       "Active charge avec B : dash de 32 px et attaque latérale pendant 3 secondes",
       "Tape les blocs dorés par en dessous",

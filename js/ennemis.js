@@ -15,6 +15,7 @@ function creerEnnemi(x, y, nom, capaciteId) {
     types: [...espece.types], // une copie : chaque ennemi a sa propre liste, qu'on peut changer sans toucher au POKEDEX
     capacite: CAPACITES.find((c) => c.id === capaciteId) || null,
     attenteTir: 0, // secondes à attendre avant de pouvoir tirer à nouveau
+    statut: null,  // brûlure, poison… (voir statuts.js)
     actif: false, mort: false, ejecte: false, timer: 0, anim: Math.random() * 10,
   };
 }
@@ -36,8 +37,11 @@ function majEnnemis(dt) {
       else continue;
     }
 
+    majStatut(e, dt); // la brûlure ou le poison font perdre des PV de temps en temps
+    if (e.mort) continue;
+
     e.anim += dt;
-    appliquerGravite(e, dt, e.espece.gravite); // 0 pour un ennemi qui flotte : il reste à sa hauteur
+    appliquerGravite(e, dt, estVolant(e) ? 0 : 1); // un ennemi de type vol flotte : il reste à sa hauteur
     const sens = Math.sign(e.vx);
     const res = deplacer(e, dt);
     if (res.mur) {
@@ -81,8 +85,13 @@ function sensEnnemi(e) {
   return e.vx < 0 ? -1 : 1;
 }
 
-// La zone de détection : un rectangle devant l'ennemi, de la même hauteur que lui
+// La zone de détection : un rectangle devant l'ennemi, de la même hauteur que lui.
+// Si sa capacité tire vers le haut (anti-air), c'est un rectangle juste au-dessus de lui, de sa largeur :
+// il tire quand le Pokémon lui saute par-dessus.
 function zoneDetection(e) {
+  if (e.capacite?.projectile?.direction === "haut") {
+    return { x: e.x, y: e.y - DETECTION_ENNEMI, l: e.l, h: DETECTION_ENNEMI };
+  }
   const sens = sensEnnemi(e);
   return {
     x: sens > 0 ? e.x + e.l : e.x - DETECTION_ENNEMI,
@@ -92,9 +101,10 @@ function zoneDetection(e) {
   };
 }
 
-// Retire des points de vie à un ennemi ; il meurt quand il n'en a plus
-function blesserEnnemi(e, degats) {
-  afficherDegats(e, degats, COULEUR_DEGATS_ENNEMI);
+// Retire des points de vie à un ennemi ; il meurt quand il n'en a plus.
+// couleur : celle du « -N » (par exemple la couleur du statut, pour les dégâts de brûlure ou de poison).
+function blesserEnnemi(e, degats, couleur = COULEUR_DEGATS_ENNEMI) {
+  afficherDegats(e, degats, couleur);
   e.pv -= degats;
   if (e.pv <= 0) ecraserEnnemi(e, true); // éjecté, comme quand on frappe le bloc sous lui
 }

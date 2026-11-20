@@ -13,6 +13,13 @@ function efficacite(typeAttaque, cible) {
   return multiplicateur;
 }
 
+// Un Pokémon de type vol flotte dans les airs : la gravité ne l'attire pas.
+// On regarde ses types tels qu'ils sont maintenant : s'il perd son type vol (anti-air), il tombe.
+// Ça ne vaut que pour les ennemis : le Pokémon du joueur tombe toujours, sinon il ne redescendrait pas de ses sauts.
+function estVolant(pokemon) {
+  return pokemon.types.includes("vol");
+}
+
 // Les dégâts d'une capacité de type « typeAttaque » contre une cible, une fois l'efficacité appliquée.
 // Arrondis à un nombre entier de PV, et au moins 1 PV, sauf si la capacité n'a aucun effet (×0).
 function degatsSelonTypes(degats, typeAttaque, cible) {

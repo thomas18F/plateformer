@@ -1,16 +1,22 @@
 // =====================================================
-//  Les tirs du Pokémon (cercles rouges, touche X)
-//  et ceux des ennemis (triangles violets), tous dans la même liste.
+//  Les tirs du Pokémon et ceux des ennemis, tous dans la même liste.
+//  Un tir file tout droit, à l'horizontale ou vers le haut (voir « direction » dans CAPACITES).
 //  Le champ « camp » dit qui a tiré : "joueur" ou "ennemi".
 // =====================================================
 
-// Crée un tir qui part de l'avant du tireur (Pokémon ou ennemi), à mi-hauteur
+// Crée un tir pour le tireur (Pokémon ou ennemi) :
+//  - direction « avant » : il part de l'avant du tireur, à mi-hauteur, et file à l'horizontale ;
+//  - direction « haut »  : il part du haut de sa tête, au milieu, et monte tout droit.
 function creerTir(tireur, sens, camp, capacite) {
   const projectile = capacite.projectile;
+  const versLeHaut = projectile.direction === "haut";
   tirs.push({
-    x: sens > 0 ? tireur.x + tireur.l : tireur.x,
-    y: tireur.y + tireur.h / 2,
-    sens,         // 1 = vers la droite, -1 = vers la gauche
+    x: versLeHaut ? tireur.x + tireur.l / 2 : sens > 0 ? tireur.x + tireur.l : tireur.x,
+    y: versLeHaut ? tireur.y : tireur.y + tireur.h / 2,
+    // dx, dy : de combien le tir avance sur chaque axe pour 1 px parcouru
+    //   dx = 1 vers la droite, -1 vers la gauche ; dy = -1 vers le haut (sur le canvas, y grandit vers le bas)
+    dx: versLeHaut ? 0 : sens,
+    dy: versLeHaut ? -1 : 0,
     camp,         // "joueur" ou "ennemi"
     forme: projectile.forme,
     couleur: projectile.couleur,
@@ -19,12 +25,12 @@ function creerTir(tireur, sens, camp, capacite) {
     vitesse: projectile.vitesse, // px/s
     portee: projectile.portee,  // distance maximale (px)
     degats: projectile.degats,   // avant l'efficacité des types
-    type: capacite.type,         // le type de la capacité (« feu »…), pour l'efficacité
+    capacite,     // la capacité qui a tiré : son type (pour l'efficacité) et son statut (brûlure…)
     parcouru: 0,  // distance déjà parcourue (px)
   });
 }
 
-// Le Pokémon tire dans la direction où il regarde
+// Le Pokémon tire dans la direction où il regarde (ou vers le haut, pour une capacité comme anti-air)
 function activerCapacite(utilisateur, capacite, camp) {
   const sens = camp === "joueur" ? utilisateur.dir : sensEnnemi(utilisateur);
   creerTir(utilisateur, sens, camp, capacite);
@@ -41,7 +47,8 @@ function majTirs(dt) {
   for (const tir of tirs) {
     // on n'avance jamais plus loin que la portée, même sur la dernière image
     const pas = Math.min(tir.vitesse * dt, tir.portee - tir.parcouru);
-    tir.x += tir.sens * pas;
+    tir.x += tir.dx * pas;
+    tir.y += tir.dy * pas;
     tir.parcouru += pas;
 
     if (!tir.spectral && tirToucheLeDecor(tir)) {
@@ -52,12 +59,12 @@ function majTirs(dt) {
     if (tir.camp === "joueur") {
       const ennemi = ennemiTouchePar(tir);
       if (ennemi) {
-        blesserEnnemi(ennemi, degatsSelonTypes(tir.degats, tir.type, ennemi));
+        subirCapacite(ennemi, tir.capacite, tir.degats);
         tir.arrete = true; // un tir ne blesse qu'un seul ennemi
       }
     } else if (etat === "jeu" && chevauche(hitboxTir(tir), joueur)) {
       // (pas pendant la descente du drapeau : le niveau est déjà gagné)
-      blesserJoueur(degatsSelonTypes(tir.degats, tir.type, joueur));
+      subirCapacite(joueur, tir.capacite, tir.degats);
       tir.arrete = true;
     }
   }
@@ -88,8 +95,15 @@ function dessinerTirs() {
       ctx.fillStyle = t.couleur;
       ellipse(t.x, t.y, r, r);
     } else {
+      // La pointe du triangle regarde là où va le tir (dx, dy) ;
+      // les deux autres coins sont derrière, de part et d'autre (px, py : perpendiculaire à dx, dy).
+      const px = -t.dy, py = t.dx;
       ctx.fillStyle = t.couleur;
-      triangle(t.x + t.sens * r, t.y, t.x - t.sens * r, t.y - r, t.x - t.sens * r, t.y + r);
+      triangle(
+        t.x + t.dx * r, t.y + t.dy * r,
+        t.x - t.dx * r + px * r, t.y - t.dy * r + py * r,
+        t.x - t.dx * r - px * r, t.y - t.dy * r - py * r,
+      );
     }
   }
 }

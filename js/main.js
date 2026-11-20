@@ -68,6 +68,7 @@ function dessiner() {
   for (const p of pieces) dessinerPiece(p.x + p.l / 2, p.y + p.h / 2, temps * 4 + p.x * 0.05);
   for (const e of ennemis) dessinerEnnemi(e);
   dessinerJoueur();
+  dessinerStatuts(); // les bulles de brûlure ou de poison, par-dessus les Pokémon
   dessinerTirs();
   dessinerEffets();
   ctx.restore();

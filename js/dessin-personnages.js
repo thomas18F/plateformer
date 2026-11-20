@@ -437,7 +437,7 @@ function dessinerSimularbre(pose) {
 
 // Le Fantominus : une boule de gaz sombre dans un halo violet qui ondule,
 // de grands yeux blancs à l'air malin et un large sourire avec deux crocs (hitbox 28 × 28).
-// Il flotte (gravite 0 dans POKEDEX) et se balance doucement de haut en bas.
+// Il flotte (il est de type vol, voir estVolant dans types.js) et se balance doucement de haut en bas.
 function dessinerFantominus(pose) {
   const CORPS = "#2e2140";
   const CONTOUR = "#120a1c";

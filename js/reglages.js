@@ -20,15 +20,14 @@ const PIECES_BLOC = 3;        // pièces gagnées en frappant un bloc doré
 //   l, h    : taille de la hitbox en px (une case = 32 px)
 //   pv      : points de vie au départ
 //   vitesse : vitesse de marche d'un ennemi (px/s) ; le joueur, lui, marche à VITESSE_MARCHE
-//   gravite : 1 = tombe normalement, 0 = flotte dans les airs (voir appliquerGravite dans collisions.js) ;
-//             pour les ennemis seulement : le joueur tombe toujours, sinon il ne redescendrait pas de ses sauts
-//   types   : les types du Pokémon (« feu », « poison »…), un ou deux
+//   types   : les types du Pokémon (« feu », « poison »…), autant qu'on veut : leurs multiplicateurs se multiplient (types.js).
+//             Un ennemi de type vol flotte dans les airs ; s'il perd ce type (anti-air), il tombe (voir estVolant dans types.js).
 // Le dessin de chaque Pokémon est dans dessin-personnages.js.
 const POKEDEX = [
-  { id: "aspicot", l: 28, h: 24, pv: 10, vitesse: 60, gravite: 1, types: ["insecte", "poison"] },    // petite chenille jaune avec deux dards
-  { id: "simularbre", l: 44, h: 60, pv: 20, vitesse: 40, gravite: 1, types: ["roche"] },             // faux arbre qui marche : presque 2 cases de haut
-  { id: "salameche", l: 22, h: 30, pv: 20, vitesse: 70, gravite: 1, types: ["feu"] },                // petit lézard orange, flamme au bout de la queue
-  { id: "fantominus", l: 28, h: 28, pv: 10, vitesse: 50, gravite: 0, types: ["spectre", "poison"] }, // boule de gaz sombre dans un halo violet : elle flotte
+  { id: "aspicot", l: 28, h: 24, pv: 10, vitesse: 60, types: ["insecte", "poison"] },    // petite chenille jaune avec deux dards
+  { id: "simularbre", l: 44, h: 60, pv: 20, vitesse: 40, types: ["roche"] },             // faux arbre qui marche : presque 2 cases de haut
+  { id: "salameche", l: 22, h: 30, pv: 20, vitesse: 70, types: ["feu"] },                // petit lézard orange, flamme au bout de la queue
+  { id: "fantominus", l: 28, h: 28, pv: 16, vitesse: 50, types: ["spectre", "poison", "vol"] }, // boule de gaz sombre dans un halo violet : elle flotte
 ];
 
 // Le Pokémon que l'on joue : un id du POKEDEX. Sa taille, ses PV, ses types et son dessin viennent de sa fiche.
@@ -38,24 +37,38 @@ const POKEMON_JOUEUR = "salameche";
 // Capacités disponibles dans le jeu : description indépendante des utilisateurs.
 //   type  : le type Pokémon de la capacité (« feu », « poison »…), comme les types du POKEDEX
 //   effet : ce que fait la capacité : « projectile » (un tir), « ecrasement » ou « charge »
+//   statut (facultatif) : { nom, chance } : la cible a « chance » d'attraper ce statut (0.1 = 10 %), voir STATUTS plus bas
+//   retireType (facultatif) : la cible perd ce type si elle l'a, une fois les dégâts calculés (ils comptent donc encore ce type)
+// Pour un projectile :
+//   direction : « avant » (part devant le tireur, dans le sens où il regarde) ou « haut » (part du haut de sa tête, vers le ciel)
+//   spectral  : true = traverse les blocs
 const CAPACITES = [
   {
     id: "flammeche",
     type: "feu",
     effet: "projectile",
-    projectile: { forme: "cercle", couleur: "#e53935", rayon: 5, spectral: false, vitesse: 480, portee: 320, degats: 5 },
+    statut: { nom: "brulure", chance: 0.1 },
+    projectile: { forme: "cercle", couleur: "#e53935", rayon: 5, direction: "avant", spectral: false, vitesse: 480, portee: 320, degats: 5 },
   },
   {
     id: "dard-venin",
     type: "poison",
     effet: "projectile",
-    projectile: { forme: "triangle", couleur: "#6d28d9", rayon: 5, spectral: false, vitesse: 200, portee: 320, degats: 5 },
+    statut: { nom: "poison", chance: 0.1 },
+    projectile: { forme: "triangle", couleur: "#6d28d9", rayon: 5, direction: "avant", spectral: false, vitesse: 200, portee: 320, degats: 5 },
   },
   {
     id: "balle-ombre",
     type: "spectre",
     effet: "projectile",
-    projectile: { forme: "cercle", couleur: "#6d28d9", rayon: 8, spectral: true, vitesse: 240, portee: 320, degats: 5 },
+    projectile: { forme: "cercle", couleur: "#6d28d9", rayon: 8, direction: "avant", spectral: true, vitesse: 240, portee: 320, degats: 5 },
+  },
+  {
+    id: "anti-air",
+    type: "roche",
+    effet: "projectile",
+    retireType: "vol", // la cible tombe : elle n'est plus de type vol
+    projectile: { forme: "triangle", couleur: "#8d6e63", rayon: 6, direction: "haut", spectral: false, vitesse: 420, portee: 320, degats: 5 },
   },
   {
     id: "ecrasement",
@@ -74,6 +87,18 @@ const CAPACITES = [
     vitesseDash: 480,
   },
 ];
+
+// Les statuts qu'une capacité peut infliger (champ « statut » d'une capacité, dans CAPACITES).
+// Le code est dans statuts.js.
+// Un Pokémon qui a un statut perd « degats » PV toutes les « intervalle » secondes, pendant « duree » secondes
+// (ces dégâts ne dépendent pas des types). Il n'a qu'un statut à la fois : tant qu'il en a un, il n'en attrape pas d'autre.
+//   immunites : les types qui ne l'attrapent jamais (comme dans les jeux : un Pokémon feu ne brûle pas)
+//   couleur   : celle des bulles autour du Pokémon et de ses dégâts « -1 »
+//   texte     : ce qui s'affiche au-dessus du Pokémon quand il l'attrape
+const STATUTS = {
+  brulure: { degats: 1, intervalle: 1, duree: 4, immunites: ["feu"], couleur: "#ff7b00", texte: "Brûlé !" },
+  poison: { degats: 1, intervalle: 1, duree: 6, immunites: ["poison", "acier"], couleur: "#b04fe0", texte: "Empoisonné !" },
+};
 
 // Efficacité des types : EFFICACITES[type de la capacité][type de la cible] = multiplicateur des dégâts.
 //   2 : super efficace       0.5 : pas très efficace       0 : aucun effet
@@ -104,12 +129,13 @@ const EFFICACITES = {
 };
 
 // Contrôles du joueur et capacités attribuées au joueur, séparés des capacités elles-mêmes.
-const TOUCHES_JOUEUR = { gauche: "arrowleft", droite: "arrowright", saut: "arrowup", capacite1: "x", capacite2: "c", capacite3: "v", capacite4: "b", entree: "enter", pause: "p" };
+const TOUCHES_JOUEUR = { gauche: "arrowleft", droite: "arrowright", saut: "arrowup", capacite1: "x", capacite2: "c", capacite3: "v", capacite4: "b", capacite5: "n", entree: "enter", pause: "p" };
 const CAPACITES_JOUEUR = [
   { action: "capacite1", capacite: "flammeche" },
   { action: "capacite2", capacite: "ecrasement" },
   { action: "capacite3", capacite: "balle-ombre" },
   { action: "capacite4", capacite: "charge" },
+  { action: "capacite5", capacite: "anti-air" },
 ];
 
 // Couleur du texte « -5 » qui s'affiche au-dessus d'un personnage qui perd des PV
@@ -117,5 +143,5 @@ const COULEUR_DEGATS_JOUEUR = "#ff5c5c"; // le Pokémon est touché
 const COULEUR_DEGATS_ENNEMI = "#ffe27a"; // un ennemi est touché
 
 // Comportement de tir ennemi (détection et délai, indépendants du projectile utilisé).
-const DETECTION_ENNEMI = 256; // un ennemi tire si le Pokémon est devant lui, à sa hauteur, à moins de ça (px)
+const DETECTION_ENNEMI = 256; // un ennemi tire si le Pokémon est à moins de ça (px) : devant lui, à sa hauteur, ou juste au-dessus de lui pour un tir vers le haut (anti-air)
 const DELAI_TIR_ENNEMI = 4;   // secondes minimum entre deux tirs d'un même ennemi

@@ -12,7 +12,7 @@
 // Les ennemis ne sont pas dans la carte : ils sont dans la liste « ennemis » de chaque niveau.
 // Chaque ennemi apparaît dans la case indiquée, avec les mêmes numéros que la carte :
 // colonne 0 = tout à gauche, ligne 0 = tout en haut.
-// Il est posé en bas de sa case ; si la case est en l'air, il tombe jusqu'au sol (sauf s'il flotte).
+// Il est posé en bas de sa case ; si la case est en l'air, il tombe jusqu'au sol (sauf s'il est de type vol).
 //
 // « nom » choisit l'ennemi (la liste complète est POKEDEX, dans reglages.js) :
 //   "aspicot"    : petite chenille jaune, tient dans sa case.
@@ -20,8 +20,9 @@
 //                  Il est centré sur sa case et déborde sur la case du dessus
 //                  et un peu sur celles de gauche et de droite : laisse ces cases vides.
 //   "salameche"  : petit lézard orange, tient dans sa case (comme le joueur). Il va bien avec la capacité "flammeche".
-//   "fantominus" : boule de gaz, tient dans sa case. Il flotte : il reste à la hauteur de sa case,
+//   "fantominus" : boule de gaz, tient dans sa case. Il est de type vol, donc il flotte : il reste à la hauteur de sa case,
 //                  passe au-dessus des trous et ne fait demi-tour que contre un mur.
+//                  Touché par anti-air, il perd son type vol et tombe : il marche alors comme les autres.
 //                  Il va bien avec la capacité "balle-ombre".
 // « capacite » choisit son tir (voir CAPACITES dans reglages.js).
 //
