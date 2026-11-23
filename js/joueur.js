@@ -163,9 +163,7 @@ function frapperBloc(t) {
   const type = grille[t.r][t.c];
   if (type === "?") {
     grille[t.r][t.c] = "U"; // bloc vide
-    nbPieces += PIECES_BLOC;
-    effets.push({ type: "piece", x: t.c * TILE + TILE / 2, y: t.r * TILE, vy: -450, t: 0.45, gain: PIECES_BLOC });
-    sons.piece();
+    gagnerPieces(PIECES_BLOC, t.c * TILE + TILE / 2, t.r * TILE);
   } else if (type === "B" || type === "U") {
     sons.bloc();
   }

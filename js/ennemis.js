@@ -55,6 +55,7 @@ function majEnnemis(dt) {
     if (e.y > hauteurNiveau) {
       e.mort = true;
       e.timer = 0;
+      gagnerValeur(e); // tombé dans un trou (un ennemi de type vol touché par anti-air) : il compte comme battu
       continue;
     }
 
@@ -110,9 +111,20 @@ function zoneDetection(e) {
 // Retire des points de vie à un ennemi ; il meurt quand il n'en a plus.
 // couleur : celle du « -N » (par exemple la couleur du statut, pour les dégâts de brûlure ou de poison).
 function blesserEnnemi(e, degats, couleur = COULEUR_DEGATS_ENNEMI) {
+  if (e.mort) return; // déjà battu : il ne rapporte pas ses pièces une deuxième fois
   afficherDegats(e, degats, couleur);
   e.pv -= degats;
-  if (e.pv <= 0) ecraserEnnemi(e, true); // éjecté, comme quand on frappe le bloc sous lui
+  if (e.pv <= 0) {
+    ecraserEnnemi(e, true); // éjecté, comme quand on frappe le bloc sous lui
+    gagnerValeur(e);
+  }
+}
+
+// L'ennemi est battu : le Pokémon gagne sa « valeur » en pièces (POKEDEX, reglages.js)
+function gagnerValeur(e) {
+  if (!e.espece.valeur) return;
+  const y = Math.min(e.y, hauteurNiveau - 20); // s'il est tombé dans un trou, la pièce saute quand même dans l'écran
+  gagnerPieces(e.espece.valeur, e.x + e.l / 2, y);
 }
 
 function ecraserEnnemi(e, ejecte) {

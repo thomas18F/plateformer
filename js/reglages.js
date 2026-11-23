@@ -23,12 +23,13 @@ const CASES_ARRIVEE = 1;      // le niveau est gagné quand le Pokémon entre da
 //   vitesse : vitesse de marche d'un ennemi (px/s) ; le joueur, lui, marche à VITESSE_MARCHE
 //   types   : les types du Pokémon (« feu », « poison »…), autant qu'on veut : leurs multiplicateurs se multiplient (types.js).
 //             Un ennemi de type vol flotte dans les airs ; s'il perd ce type (anti-air), il tombe (voir estVolant dans types.js).
+//   valeur  : pièces gagnées quand on bat un ennemi de cette espèce
 // Le dessin de chaque Pokémon est dans dessin-personnages.js.
 const POKEDEX = [
-  { id: "aspicot", l: 28, h: 24, pv: 10, vitesse: 60, types: ["insecte", "poison"] },    // petite chenille jaune avec deux dards
-  { id: "simularbre", l: 44, h: 60, pv: 20, vitesse: 40, types: ["roche"] },             // faux arbre qui marche : presque 2 cases de haut
-  { id: "salameche", l: 22, h: 30, pv: 20, vitesse: 70, types: ["feu"] },                // petit lézard orange, flamme au bout de la queue
-  { id: "fantominus", l: 28, h: 28, pv: 16, vitesse: 50, types: ["spectre", "poison", "vol"] }, // boule de gaz sombre dans un halo violet : elle flotte
+  { id: "aspicot", l: 28, h: 24, pv: 10, vitesse: 60, types: ["insecte", "poison"], valeur: 1 },    // petite chenille jaune avec deux dards
+  { id: "simularbre", l: 44, h: 60, pv: 20, vitesse: 40, types: ["roche"], valeur: 3 },             // faux arbre qui marche : presque 2 cases de haut
+  { id: "salameche", l: 22, h: 30, pv: 20, vitesse: 70, types: ["feu"], valeur: 4 },                // petit lézard orange, flamme au bout de la queue
+  { id: "fantominus", l: 28, h: 28, pv: 16, vitesse: 50, types: ["spectre", "poison", "vol"], valeur: 2 }, // boule de gaz sombre dans un halo violet : elle flotte
 ];
 
 // Le Pokémon que l'on joue : un id du POKEDEX. Sa taille, ses PV, ses types et son dessin viennent de sa fiche.
@@ -106,8 +107,8 @@ const CAPACITES = [
 //   couleur   : celle des bulles autour du Pokémon et de ses dégâts « -1 »
 //   texte     : ce qui s'affiche au-dessus du Pokémon quand il l'attrape
 const STATUTS = {
-  brulure: { degats: 1, intervalle: 1, duree: 4, immunites: ["feu"], couleur: "#ff7b00", texte: "Brûlé !" },
-  poison: { degats: 1, intervalle: 1, duree: 6, immunites: ["poison", "acier"], couleur: "#b04fe0", texte: "Empoisonné !" },
+  brulure: { degats: 1, intervalle: 2, duree: 10, immunites: ["feu"], couleur: "#ff7b00", texte: "Brûlé !" },
+  poison: { degats: 1, intervalle: 2, duree: 12, immunites: ["poison", "acier"], couleur: "#b04fe0", texte: "Empoisonné !" },
 };
 
 // Efficacité des types : EFFICACITES[type de la capacité][type de la cible] = multiplicateur des dégâts.
