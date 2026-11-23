@@ -1,5 +1,5 @@
 // =====================================================
-//  Le Pokémon : déplacement, saut, dangers, drapeau
+//  Le Pokémon : déplacement, saut, dangers, arrivée
 // =====================================================
 
 // La fiche du POKEDEX du Pokémon que l'on joue (POKEMON_JOUEUR, dans reglages.js)
@@ -149,9 +149,8 @@ function majJoueur(dt) {
     }
   }
 
-  // Drapeau
-  const mat = { x: drapeau.x, y: drapeau.haut, l: drapeau.l, h: drapeau.bas - drapeau.haut };
-  if (chevauche(j, mat)) attraperDrapeau();
+  // Arrivée : les CASES_ARRIVEE dernières colonnes de la carte
+  if (j.x + j.l > largeurNiveau - CASES_ARRIVEE * TILE) finirNiveau();
 }
 
 function blocLePlusProche(liste, j) {
@@ -208,24 +207,7 @@ function finDeVie() {
   etat = "gameover";
 }
 
-function attraperDrapeau() {
-  const j = joueur;
-  j.vx = 0;
-  j.vy = 0;
-  j.dir = 1;
-  j.x = drapeau.x - j.l;
-  etat = "drapeau";
-  sons.drapeau();
-}
-
-// Le Pokémon et le fanion glissent le long du mât
-function majDrapeau(dt) {
-  const j = joueur;
-  j.y = Math.min(j.y + 260 * dt, drapeau.bas - j.h);
-  drapeau.drapY = Math.min(drapeau.drapY + 260 * dt, drapeau.bas - 34);
-  if (j.y >= drapeau.bas - j.h && drapeau.drapY >= drapeau.bas - 34) {
-    j.auSol = true;
-    etat = "victoire";
-    sons.victoire();
-  }
+function finirNiveau() {
+  etat = "victoire";
+  sons.victoire();
 }

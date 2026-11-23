@@ -14,6 +14,7 @@ const DEGATS_PICS = 10;       // PV perdus en touchant des pics
 const DELAI_PICS = 1;         // secondes pendant lesquelles les pics ne blessent plus, après une piqûre
 const VITESSE_CARTE = 150;    // vitesse du Pokémon sur la carte du monde (px/s)
 const PIECES_BLOC = 3;        // pièces gagnées en frappant un bloc doré
+const CASES_ARRIVEE = 1;      // le niveau est gagné quand le Pokémon entre dans les N dernières colonnes de la carte
 
 // Le Pokédex : tous les Pokémon du jeu.
 // Les ennemis des niveaux (champ « nom » dans niveau.js) et le Pokémon du joueur (POKEMON_JOUEUR, plus bas) en viennent.

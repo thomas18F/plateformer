@@ -1,5 +1,5 @@
 // =====================================================
-//  Dessin des pièces, du drapeau, du personnage et des ennemis
+//  Dessin des pièces, du personnage et des ennemis
 // =====================================================
 
 function dessinerPiece(cx, cy, phase) {
@@ -8,20 +8,6 @@ function dessinerPiece(cx, cy, phase) {
   ellipse(cx, cy, largeur, 10);
   ctx.fillStyle = "#ffd23f";
   ellipse(cx, cy, largeur * 0.65, 7);
-}
-
-function dessinerDrapeau() {
-  const d = drapeau;
-  ctx.fillStyle = "#e3e7ec";
-  ctx.fillRect(d.x, d.haut, d.l, d.bas - d.haut);
-  ctx.fillStyle = "#9aa1ab";
-  ctx.fillRect(d.x + 4, d.haut, 2, d.bas - d.haut);
-  ctx.fillStyle = "#ffcf3a";
-  ellipse(d.x + 3, d.haut - 4, 7, 7);
-  ctx.fillStyle = "#e8742a";
-  triangle(d.x, d.drapY, d.x - 44, d.drapY + 15, d.x, d.drapY + 30);
-  ctx.fillStyle = "#fff6e8";
-  ellipse(d.x - 12, d.drapY + 15, 4, 4);
 }
 
 // Sans rien entre les parenthèses, c'est le personnage du niveau ; la carte du monde passe le sien.

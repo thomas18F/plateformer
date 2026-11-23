@@ -26,12 +26,6 @@ function mettreAJour(dt) {
     case "pause":
       if (appuye.pause || appuye.entree) etat = "jeu";
       break;
-    case "drapeau":
-      majDrapeau(dt);
-      majTirs(dt);
-      majEffets(dt);
-      majCamera(dt);
-      break;
     case "victoire":
       majEffets(dt);
       if (appuye.entree) {
@@ -64,7 +58,6 @@ function dessiner() {
   ctx.translate(-Math.round(camera.x), 0); // tout le monde bouge avec la caméra
   dessinerDecorations(); // en premier : les tuiles et les personnages passent devant
   dessinerDecor();
-  dessinerDrapeau();
   for (const p of pieces) dessinerPiece(p.x + p.l / 2, p.y + p.h / 2, temps * 4 + p.x * 0.05);
   for (const e of ennemis) dessinerEnnemi(e);
   dessinerJoueur();

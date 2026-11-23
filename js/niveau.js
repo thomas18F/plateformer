@@ -5,9 +5,11 @@
 // Chaque caractère est une case de 32×32 px :
 //   #  sol            X  bloc de pierre     B  brique
 //   ?  bloc bonus     o  pièce              ^  pics
-//   P  départ du joueur                     F  drapeau d'arrivée
+//   P  départ du joueur
 //   R  roche de grotte (sol, murs, plafond : comme # mais sans herbe)
 // Une carte fait 17 lignes de haut : le sol commence à la ligne 15.
+// Le niveau est gagné quand le Pokémon atteint les dernières colonnes de la carte
+// (CASES_ARRIVEE dans reglages.js) : la largeur de la carte, c'est celle de sa plus longue ligne.
 //
 // Les ennemis ne sont pas dans la carte : ils sont dans la liste « ennemis » de chaque niveau.
 // Chaque ennemi apparaît dans la case indiquée, avec les mêmes numéros que la carte :
@@ -31,7 +33,9 @@
 //   "foret"  : les mêmes collines, avec deux rangées d'arbres en plus.
 //   "grotte" : pas de ciel, de la roche brune avec des stalactites et des stalagmites.
 //
-// « nom » (facultatif) s'affiche en haut de la carte du monde quand le Pokémon est sur la ville du niveau.
+// « nom » (facultatif) s'affiche en haut de la carte du monde quand le Pokémon est sur le niveau.
+// Les niveaux sont posés sur la carte dans l'ordre de cette liste : villes et morceaux de chemin
+// à la suite (voir carte-monde.js).
 //
 // La liste « decorations » (facultative) marche pareil, mais ce sont des dessins sans hitbox :
 // le joueur, les ennemis et les tirs passent à travers.
@@ -57,7 +61,7 @@ const NIVEAUX = [
       "        ooo   ?  B?B?B                        BBBBBB         ?B?B?     oo                   BBBBBB             XXX",
       "                                   X                                  o  o                                    XXXX",
       "                           X       X                                                                         XXXXX",
-      "   P                       X       X                                            ^^                          XXXXXX      F",
+      "   P                       X       X                                            ^^                          XXXXXX",
       "########################################   ###########################    ###########################   ######################",
       "########################################   ###########################    ###########################   ######################",
     ],
@@ -93,7 +97,7 @@ const NIVEAUX = [
       "      ooo  ?        B?B                   ?                           BBBBBBBB      ?B?                       B?B?B           XXX",
       "                                                XXXXXX         BB                                         X                  XXXX",
       "                                               XXXXXXX                                                X   X                 XXXXX",
-      "   P                         ^^               XXXXXXXX                         ^^                     X^^^X                XXXXXX     F",
+      "   P                         ^^               XXXXXXXX                         ^^                     X^^^X                XXXXXX",
       "################   #################    #####################      #########################    #####################   ####################",
       "################   #################    #####################      #########################    #####################   ####################",
     ],
@@ -136,7 +140,7 @@ const NIVEAUX = [
       "       ooo  ?                                        RRRRRRR                       ?R?                                         XXX",
       "                            oooooo                                                     oooo      RRR            RR            XXXX",
       "                                               RR                                                               RR           XXXXX",
-      "   P                                           RR      ^^^                                                  ^^  RR          XXXXXX     F",
+      "   P                                           RR      ^^^                                                  ^^  RR          XXXXXX",
       "RRRRRRRRRRRRRRRR   RRRRRRRRRRRRRRRRRRRRRR    RRRRRRRRRRRRRRRRRRRRRRRRRR   RRRRRRRRRRRRRRRRRRRRRR     RRRRRRRRRRRRRRR   RRRRRRRRRRRRRRRRRRRRR",
       "RRRRRRRRRRRRRRRR   RRRRRRRRRRRRRRRRRRRRRR    RRRRRRRRRRRRRRRRRRRRRRRRRR   RRRRRRRRRRRRRRRRRRRRRR     RRRRRRRRRRRRRRR   RRRRRRRRRRRRRRRRRRRRR",
     ],
@@ -171,7 +175,7 @@ const NIVEAUX = [
       "       ooo   ?                          BB?BB             B       B    oooo          X  X           B?B?B                       XXX",
       "                      ooo           X            BBB      BBBB?BBBB                 XX  XX                            ooo      XXXX",
       "                              X     X                                              XXX  XXX                                   XXXXX",
-      "   P                          X     X                                   ^^        XXXX  XXXX                                 XXXXXX     F",
+      "   P                          X     X                                   ^^        XXXX  XXXX                                 XXXXXX",
       "######################   #######################     #################################  ##############################   ####################",
       "######################   #######################     #################################  ##############################   ####################",
     ],
@@ -207,7 +211,7 @@ const NIVEAUX = [
       "       ooo  ?B?          oooo                                                                 ooo              X   X              BB?BB                 XXX",
       "                                              BB       BB             X         X                             XX   XX                         ooo      XXXX",
       "                                  X   X                               X         X                            XXX   XXX                                XXXXX",
-      "   P                              X^^^X                               X         X                           XXXX   XXXX                  ^^          XXXXXX     F",
+      "   P                              X^^^X                               X         X                           XXXX   XXXX                  ^^          XXXXXX",
       "#########################    ###############               ##################################     ##############   ###########################   ####################",
       "#########################    ###############               ##################################     ##############   ###########################   ####################",
     ],

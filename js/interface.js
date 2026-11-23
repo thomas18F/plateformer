@@ -14,7 +14,7 @@ function dessinerHUD() {
 }
 
 function dessinerEcran() {
-  if (etat === "jeu" || etat === "drapeau") return;
+  if (etat === "jeu") return;
 
   ctx.fillStyle = "rgba(15, 20, 35, 0.6)";
   ctx.fillRect(0, 0, W, H);
@@ -43,7 +43,7 @@ function dessinerEcran() {
       "Active écrasement avec C, puis saute sur un aspicot dans les 3 secondes",
       "Active charge avec B : dash de 32 px et attaque latérale pendant 3 secondes",
       "Tape les blocs dorés par en dessous",
-      `Atteins le drapeau au bout de chacun des ${NIVEAUX.length} niveaux !`,
+      `Va jusqu'au bout de chacun des ${NIVEAUX.length} niveaux !`,
     ], 240);
     invite("Appuie sur Entrée pour jouer");
   } else if (etat === "pause") {

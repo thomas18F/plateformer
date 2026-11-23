@@ -63,7 +63,7 @@ function majTirs(dt) {
         tir.arrete = true; // un tir ne blesse qu'un seul ennemi
       }
     } else if (etat === "jeu" && chevauche(hitboxTir(tir), joueur)) {
-      // (pas pendant la descente du drapeau : le niveau est déjà gagné)
+      // (pas si le Pokémon vient d'arriver au bout : le niveau est déjà gagné)
       subirCapacite(joueur, tir.capacite, tir.degats);
       tir.arrete = true;
     }

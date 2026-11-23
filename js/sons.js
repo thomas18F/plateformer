@@ -34,6 +34,5 @@ const sons = {
   ecrase: () => son(420, 90, 0.15, "triangle", 0.15),
   bloc: () => son(160, 80, 0.08, "square", 0.08),
   mort: () => son(520, 60, 0.9, "sawtooth", 0.06),
-  drapeau: () => son(900, 250, 0.6, "triangle", 0.1),
   victoire: () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => son(f, f, 0.25), i * 130)),
 };

@@ -2,14 +2,14 @@
 //  L'état du jeu : niveau en cours, pièces, chargement du niveau, caméra
 // =====================================================
 
-let etat = "titre";   // titre | carte | jeu | pause | drapeau | victoire | gameover
+let etat = "titre";   // titre | carte | jeu | pause | victoire | gameover
 let numeroNiveau = 0; // position dans NIVEAUX : 0 = niveau 1
-let niveauDebloque = 0; // le niveau le plus loin qu'on peut jouer (les villes après sont fermées)
+let niveauDebloque = 0; // le niveau le plus loin qu'on peut jouer (les niveaux après sont fermés sur la carte)
 let nbPieces = 0;
 let chrono = 0;       // temps passé dans le niveau
 let temps = 0;        // horloge générale pour les animations
 
-let grille, pieces, ennemis, decorations, effets, rebonds, tirs, joueur, drapeau, depart;
+let grille, pieces, ennemis, decorations, effets, rebonds, tirs, joueur, depart;
 let largeurNiveau, hauteurNiveau;
 const camera = { x: 0 };
 
@@ -37,10 +37,6 @@ function chargerNiveau() {
       if ("#RXB?^".includes(ch)) tuile = ch;
       else if (ch === "o") pieces.push({ x: x + 8, y: y + 6, l: 16, h: 20 });
       else if (ch === "P") depart = { x, y }; // le coin de la case : creerJoueur pose le Pokémon en bas, au milieu
-      else if (ch === "F") {
-        tuile = "X"; // socle du drapeau
-        drapeau = { x: x + 13, l: 6, haut: (r - 9) * TILE + 8, bas: y, drapY: (r - 9) * TILE + 16 };
-      }
       rangee.push(tuile);
     }
     grille.push(rangee);
@@ -65,7 +61,7 @@ function chargerNiveau() {
   chrono = 0;
 }
 
-// Une nouvelle partie repart toujours du niveau 1, sur la carte du monde, avec les autres villes fermées
+// Une nouvelle partie repart toujours du niveau 1, sur la carte du monde, avec les autres niveaux fermés
 function nouvellePartie() {
   numeroNiveau = 0;
   niveauDebloque = 0;
@@ -75,7 +71,8 @@ function nouvellePartie() {
 
 // Après une victoire, on revient sur la carte. Le Pokémon garde ses pièces ;
 // ses PV repartiront au maximum dans le prochain niveau.
-// Si c'était la ville la plus loin, la suivante s'ouvre et le Pokémon y marche tout seul.
+// Si c'était le niveau le plus loin, le suivant s'ouvre et le Pokémon y marche tout seul
+// (la ville ou le morceau de chemin suivant).
 function retourCarteApresVictoire() {
   ouvrirCarte();
   if (numeroNiveau === niveauDebloque) {
