@@ -10,10 +10,11 @@ function mettreAJour(dt) {
       if (appuye.entree || appuye.saut) nouvellePartie();
       break;
     case "carte":
-      majCarte(dt);
+      majCarte();
       break;
     case "jeu":
       if (appuye.pause) { etat = "pause"; break; }
+      if (appuye.carte) { etat = "carte"; break; } // le niveau attend, comme en pause : on le reprend là où on en était
       if (!joueur.mort) chrono += dt;
       majJoueur(dt);
       if (!joueur.mort) {
@@ -30,7 +31,7 @@ function mettreAJour(dt) {
       majEffets(dt);
       if (appuye.entree) {
         if (estDernierNiveau()) nouvellePartie();
-        else retourCarteApresVictoire();
+        else niveauSuivant();
       }
       break;
     case "gameover":

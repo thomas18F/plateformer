@@ -9,12 +9,12 @@
 //   =  chemin         -  pont (un chemin posé sur l'eau)
 //   A à Z  ville : le Pokémon les visite dans l'ordre de l'alphabet (A, puis B, puis C…)
 //
-// Le Pokémon va de ville en ville en suivant les chemins (= et -) :
+// Le voyage va de ville en ville en suivant les chemins (= et -) :
 // il faut donc que les villes qui se suivent (A et B, B et C…) soient reliées par un chemin.
 //
-// Les niveaux sont posés dans l'ordre où le Pokémon les rencontre en marchant :
+// Les niveaux sont posés dans l'ordre où on les rencontre en suivant ce voyage :
 // chaque ville est un niveau, et chaque morceau de chemin tout droit entre deux villes aussi
-// (le Pokémon s'arrête au milieu du morceau). Un chemin qui tourne une fois entre A et B
+// (le niveau est au milieu du morceau). Un chemin qui tourne une fois entre A et B
 // fait donc 2 niveaux : A = niveau 1, le morceau qui part de A = niveau 2,
 // le morceau qui arrive à B = niveau 3, B = niveau 4…
 // Le numéro de chaque niveau est écrit dessus sur la carte.
@@ -72,7 +72,7 @@ function rangDeLaVille(ch) {
   return ch.charCodeAt(0) - "A".charCodeAt(0);
 }
 
-// Les cases où le Pokémon peut marcher
+// Les cases de chemin (les villes en font partie)
 function estChemin(ch) {
   return ch === "=" || ch === "-" || estVille(ch);
 }
@@ -130,25 +130,13 @@ function trouverRoute(depart, arrivee) {
 // ETAPES[0] est l'endroit du niveau 1 (NIVEAUX[0]), ETAPES[1] celui du niveau 2…
 // Une étape est une ville { ville: true, x, y }, ou un morceau de chemin tout droit
 // entre deux virages { ville: false, x, y } : x, y est alors le milieu du morceau.
-// TRACE : tous les points par où passe le Pokémon, de la ville A à la dernière
-// (les villes, les milieux des morceaux et les virages) ; « k » est la place de l'étape dans TRACE.
 const ETAPES = [];
-const TRACE = [];
 // Pour colorer les chemins : l'étape dont fait partie le passage d'une case à sa voisine
 const ETAPE_DU_PASSAGE = {};
 
-function ajouterAuTrace(point, etape) {
-  if (etape) {
-    etape.k = TRACE.length;
-    ETAPES.push(etape);
-  }
-  TRACE.push(point);
-}
-
 function ajouterVille(v) {
   VILLES[v].etape = ETAPES.length;
-  const centre = centreCase(VILLES[v]);
-  ajouterAuTrace(centre, { ville: true, ...centre });
+  ETAPES.push({ ville: true, ...centreCase(VILLES[v]) });
 }
 
 function noterPassage(p, q, etape) {
@@ -173,9 +161,8 @@ function noterPassage(p, q, etape) {
       const a = centreCase(route[debut]);
       const b = centreCase(route[i]);
       const milieu = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-      ajouterAuTrace(milieu, { ville: false, ...milieu });
+      ETAPES.push({ ville: false, ...milieu });
       for (let j = debut; j < i; j++) noterPassage(route[j], route[j + 1], ETAPES.length - 1);
-      if (!arrivee) ajouterAuTrace(b); // le virage
       debut = i;
     }
     ajouterVille(v + 1);
@@ -187,7 +174,7 @@ if (NIVEAUX.length > ETAPES.length) {
 }
 
 function etapeDuNiveau(n) {
-  return ETAPES[n] || ETAPES[ETAPES.length - 1] || { x: 0, y: 0, k: 0 };
+  return ETAPES[n] || ETAPES[ETAPES.length - 1] || { x: 0, y: 0 };
 }
 
 // Les morceaux de chemin à dessiner : un rectangle entre chaque paire de cases voisines,
@@ -204,62 +191,11 @@ for (let r = 0; r < CARTE_MONDE.length; r++) {
   }
 }
 
-// ---------- Le Pokémon sur la carte ----------
-// x, y : le point du chemin où il se trouve.
-// points : les points qu'il lui reste à atteindre ; vide quand il ne bouge pas.
-const pokemonCarte = { x: 0, y: 0, dir: 1, anim: 0, points: [] };
-
-// Affiche la carte, avec le Pokémon posé sur l'endroit du niveau en cours
-function ouvrirCarte() {
-  const { x, y } = etapeDuNiveau(numeroNiveau);
-  Object.assign(pokemonCarte, { x, y });
-  pokemonCarte.points = [];
-  etat = "carte";
-}
-
-// Le Pokémon part vers l'endroit du niveau n en suivant le tracé (en avant ou en arrière)
-function partirVers(n) {
-  const depart = etapeDuNiveau(numeroNiveau).k;
-  const arrivee = etapeDuNiveau(n).k;
-  const sens = arrivee > depart ? 1 : -1;
-  pokemonCarte.points = [];
-  for (let k = depart + sens; k !== arrivee + sens; k += sens) pokemonCarte.points.push(TRACE[k]);
-  numeroNiveau = n;
-}
-
-function majCarte(dt) {
-  const r = pokemonCarte;
-
-  // En marche : il avance vers le prochain point, sans écouter les touches
-  if (r.points.length > 0) {
-    const cible = r.points[0];
-    const dx = cible.x - r.x;
-    const dy = cible.y - r.y;
-    const distance = Math.hypot(dx, dy);
-    const pas = VITESSE_CARTE * dt;
-    if (Math.abs(dx) > 0.5) r.dir = Math.sign(dx);
-    if (distance <= pas) {
-      r.x = cible.x;
-      r.y = cible.y;
-      r.points.shift();
-    } else {
-      r.x += (dx / distance) * pas;
-      r.y += (dy / distance) * pas;
-    }
-    r.anim += pas;
-    return;
-  }
-
-  // Arrêté sur l'endroit d'un niveau
-  if (appuye.droite) {
-    if (numeroNiveau < niveauDebloque) partirVers(numeroNiveau + 1);
-    else sons.bloc(); // le niveau suivant est encore fermé
-  } else if (appuye.gauche && numeroNiveau > 0) {
-    partirVers(numeroNiveau - 1);
-  } else if (appuye.entree || appuye.saut) {
-    chargerNiveau();
-    etat = "jeu";
-  }
+// ---------- La carte ouverte ----------
+// On l'ouvre avec M pendant un niveau (main.js) : elle montre seulement où on en est.
+// Le niveau attend derrière, comme en pause ; on le reprend là où on en était.
+function majCarte() {
+  if (appuye.carte || appuye.entree || appuye.pause) etat = "jeu";
 }
 
 // ---------- Dessin de la carte ----------
@@ -324,7 +260,7 @@ function dessinerCarte() {
   // D'abord tous les bords (plus larges), puis l'intérieur par-dessus.
   for (const [largeur, ouvert, ferme] of [[10, coul.cheminBord, coul.cheminFermeBord], [6, coul.chemin, coul.cheminFerme]]) {
     for (const m of MORCEAUX_CHEMIN) {
-      ctx.fillStyle = m.etape >= 0 && m.etape <= niveauDebloque ? ouvert : ferme;
+      ctx.fillStyle = m.etape >= 0 && m.etape <= numeroNiveau ? ouvert : ferme;
       const a = centreCase(m);
       const b = centreCase({ c: m.c2, r: m.r2 });
       ctx.fillRect(a.x - largeur / 2, a.y - largeur / 2, b.x - a.x + largeur, b.y - a.y + largeur);
@@ -338,7 +274,7 @@ function dessinerCarte() {
   ctx.font = "bold 10px system-ui, sans-serif";
   ETAPES.forEach((etape, n) => {
     if (etape.ville) return;
-    const ouverte = n <= niveauDebloque;
+    const ouverte = n <= numeroNiveau;
     ctx.fillStyle = ouverte ? coul.pastilleBord : coul.pastilleFermeeBord;
     ellipse(etape.x, etape.y, 8, 8);
     ctx.fillStyle = ouverte ? coul.pastille : coul.pastilleFermee;
@@ -352,7 +288,7 @@ function dessinerCarte() {
   pourChaqueCase((ch, x, y) => {
     if (!estVille(ch)) return;
     const n = VILLES[rangDeLaVille(ch)].etape; // pas d'étape : une lettre manque avant elle, elle n'est pas visitée
-    const ouverte = n !== undefined && n <= niveauDebloque;
+    const ouverte = n !== undefined && n <= numeroNiveau;
     ctx.fillStyle = ouverte ? coul.villeBord : coul.villeFermeeBord;
     ctx.fillRect(x - 3, y - 3, CASE_CARTE + 6, CASE_CARTE + 6);
     ctx.fillStyle = ouverte ? coul.ville : coul.villeFermee;
@@ -365,16 +301,15 @@ function dessinerCarte() {
     if (n !== undefined) ctx.fillText(n + 1, x + CASE_CARTE / 2, y + CASE_CARTE / 2 + 1);
   });
 
-  // Le Pokémon (le même dessin que dans les niveaux)
-  const r = pokemonCarte;
+  // Le Pokémon (le même dessin que dans les niveaux), posé sur l'endroit du niveau en cours
+  const { x, y } = etapeDuNiveau(numeroNiveau);
   ctx.save();
-  ctx.translate(r.x, r.y - DECALAGE_POKEMON_CARTE); // entre ses pattes
+  ctx.translate(x, y - DECALAGE_POKEMON_CARTE); // entre ses pattes
   ctx.scale(TAILLE_POKEMON_CARTE, TAILLE_POKEMON_CARTE);
   const espece = especeDuJoueur();
   dessinerJoueur({
     espece, x: -espece.l / 2, y: -espece.h, l: espece.l, h: espece.h,
-    dir: r.dir, auSol: true, mort: false,
-    vx: r.points.length > 0 ? VITESSE_CARTE : 0, anim: r.anim,
+    dir: 1, auSol: true, mort: false, vx: 0, anim: 0,
   });
   ctx.restore();
 
@@ -420,5 +355,5 @@ function dessinerInfosCarte() {
   texteContour(`Niveau ${numeroNiveau + 1}${nom}`, W / 2, 28, "#ffe27a", 6);
 
   ctx.font = "18px system-ui, sans-serif";
-  texteContour("← → : changer de niveau        Entrée : jouer", W / 2, H - 24);
+  texteContour("M ou Entrée : reprendre le niveau", W / 2, H - 24);
 }

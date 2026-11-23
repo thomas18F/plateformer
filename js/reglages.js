@@ -12,7 +12,6 @@ const FRICTION_SOL = 1400;
 const CHUTE_MAX = 900;
 const DEGATS_PICS = 10;       // PV perdus en touchant des pics
 const DELAI_PICS = 1;         // secondes pendant lesquelles les pics ne blessent plus, après une piqûre
-const VITESSE_CARTE = 150;    // vitesse du Pokémon sur la carte du monde (px/s)
 const PIECES_BLOC = 3;        // pièces gagnées en frappant un bloc doré
 const CASES_ARRIVEE = 1;      // le niveau est gagné quand le Pokémon entre dans les N dernières colonnes de la carte
 
@@ -140,14 +139,11 @@ const EFFICACITES = {
 };
 
 // Contrôles du joueur et capacités attribuées au joueur, séparés des capacités elles-mêmes.
-const TOUCHES_JOUEUR = { gauche: "arrowleft", droite: "arrowright", saut: "arrowup", capacite1: "x", capacite2: "c", capacite3: "v", capacite4: "b", capacite5: "n", capacite6: "m", entree: "enter", pause: "p" };
+const TOUCHES_JOUEUR = { gauche: "arrowleft", droite: "arrowright", saut: "arrowup", capacite1: "x", capacite2: "c", capacite3: "v", carte: "m", entree: "enter", pause: "p" };
 const CAPACITES_JOUEUR = [
   { action: "capacite1", capacite: "flammeche" },
   { action: "capacite2", capacite: "ecrasement" },
   { action: "capacite3", capacite: "balle-ombre" },
-  { action: "capacite4", capacite: "charge" },
-  { action: "capacite5", capacite: "anti-air" },
-  { action: "capacite6", capacite: "bombe-beurk" },
 ];
 
 // Couleur du texte « -5 » qui s'affiche au-dessus d'un personnage qui perd des PV
