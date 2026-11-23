@@ -41,7 +41,9 @@ const POKEMON_JOUEUR = "salameche";
 //   statut (facultatif) : { nom, chance } : la cible a « chance » d'attraper ce statut (0.1 = 10 %), voir STATUTS plus bas
 //   retireType (facultatif) : la cible perd ce type si elle l'a, une fois les dégâts calculés (ils comptent donc encore ce type)
 // Pour un projectile :
-//   direction : « avant » (part devant le tireur, dans le sens où il regarde) ou « haut » (part du haut de sa tête, vers le ciel)
+//   forme     : « cercle », « triangle » (la pointe dans le sens du tir) ou « carre »
+//   direction : « avant » (part devant le tireur, dans le sens où il regarde), « haut » (part du haut de sa tête, vers le ciel)
+//               ou « bas » (part de sous ses pieds, vers le sol)
 //   spectral  : true = traverse les blocs
 const CAPACITES = [
   {
@@ -70,6 +72,13 @@ const CAPACITES = [
     effet: "projectile",
     retireType: "vol", // la cible tombe : elle n'est plus de type vol
     projectile: { forme: "triangle", couleur: "#8d6e63", rayon: 6, direction: "haut", spectral: false, vitesse: 420, portee: 320, degats: 5 },
+  },
+  {
+    id: "bombe-beurk",
+    type: "poison",
+    effet: "projectile",
+    statut: { nom: "poison", chance: 0.3 },
+    projectile: { forme: "carre", couleur: "#6d28d9", rayon: 6, direction: "bas", spectral: false, vitesse: 360, portee: 320, degats: 5 },
   },
   {
     id: "ecrasement",
@@ -130,13 +139,14 @@ const EFFICACITES = {
 };
 
 // Contrôles du joueur et capacités attribuées au joueur, séparés des capacités elles-mêmes.
-const TOUCHES_JOUEUR = { gauche: "arrowleft", droite: "arrowright", saut: "arrowup", capacite1: "x", capacite2: "c", capacite3: "v", capacite4: "b", capacite5: "n", entree: "enter", pause: "p" };
+const TOUCHES_JOUEUR = { gauche: "arrowleft", droite: "arrowright", saut: "arrowup", capacite1: "x", capacite2: "c", capacite3: "v", capacite4: "b", capacite5: "n", capacite6: "m", entree: "enter", pause: "p" };
 const CAPACITES_JOUEUR = [
   { action: "capacite1", capacite: "flammeche" },
   { action: "capacite2", capacite: "ecrasement" },
   { action: "capacite3", capacite: "balle-ombre" },
   { action: "capacite4", capacite: "charge" },
   { action: "capacite5", capacite: "anti-air" },
+  { action: "capacite6", capacite: "bombe-beurk" },
 ];
 
 // Couleur du texte « -5 » qui s'affiche au-dessus d'un personnage qui perd des PV
@@ -144,5 +154,5 @@ const COULEUR_DEGATS_JOUEUR = "#ff5c5c"; // le Pokémon est touché
 const COULEUR_DEGATS_ENNEMI = "#ffe27a"; // un ennemi est touché
 
 // Comportement de tir ennemi (détection et délai, indépendants du projectile utilisé).
-const DETECTION_ENNEMI = 256; // un ennemi tire si le Pokémon est à moins de ça (px) : devant lui, à sa hauteur, ou juste au-dessus de lui pour un tir vers le haut (anti-air)
+const DETECTION_ENNEMI = 256; // un ennemi tire si le Pokémon est à moins de ça (px) : devant lui, à sa hauteur, ou juste au-dessus / en dessous de lui pour un tir vers le haut (anti-air) / vers le bas (bombe beurk)
 const DELAI_TIR_ENNEMI = 4;   // secondes minimum entre deux tirs d'un même ennemi

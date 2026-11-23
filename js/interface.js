@@ -39,11 +39,11 @@ function dessinerEcran() {
     titre("Super Pokémon Plateformer", "#ffb347");
     lignes([
       "← → : se déplacer       Espace ou ↑ : sauter (reste appuyé pour sauter plus haut)",
-      "X : flammèche     C : écrasement     V : balle ombre     B : charge     N : anti-air (tire vers le haut)",
+      "X : flammèche     C : écrasement     V : balle ombre     B : charge",
+      "N : anti-air (tire vers le haut)     M : bombe beurk (tombe vers le bas)",
       "Active écrasement avec C, puis saute sur un aspicot dans les 3 secondes",
       "Active charge avec B : dash de 32 px et attaque latérale pendant 3 secondes",
-      "Tape les blocs dorés par en dessous",
-      `Va jusqu'au bout de chacun des ${NIVEAUX.length} niveaux !`,
+      `Tape les blocs dorés par en dessous et va jusqu'au bout des ${NIVEAUX.length} niveaux !`,
     ], 240);
     invite("Appuie sur Entrée pour jouer");
   } else if (etat === "pause") {

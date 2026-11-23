@@ -1,22 +1,27 @@
 // =====================================================
 //  Les tirs du Pokémon et ceux des ennemis, tous dans la même liste.
-//  Un tir file tout droit, à l'horizontale ou vers le haut (voir « direction » dans CAPACITES).
+//  Un tir file tout droit : à l'horizontale, vers le haut ou vers le bas (voir « direction » dans CAPACITES).
 //  Le champ « camp » dit qui a tiré : "joueur" ou "ennemi".
 // =====================================================
 
-// Crée un tir pour le tireur (Pokémon ou ennemi) :
-//  - direction « avant » : il part de l'avant du tireur, à mi-hauteur, et file à l'horizontale ;
-//  - direction « haut »  : il part du haut de sa tête, au milieu, et monte tout droit.
+// D'où part le tir et dans quelle direction il file, selon la « direction » de son projectile :
+//  - « avant » : de l'avant du tireur, à mi-hauteur, à l'horizontale dans le sens où il regarde ;
+//  - « haut »  : du haut de sa tête, au milieu, tout droit vers le ciel ;
+//  - « bas »   : de sous ses pieds, au milieu, tout droit vers le sol.
+// dx, dy : de combien le tir avance sur chaque axe pour 1 px parcouru
+//   dx = 1 vers la droite, -1 vers la gauche ; dy = -1 vers le haut, 1 vers le bas (sur le canvas, y grandit vers le bas)
+function departDuTir(tireur, sens, direction) {
+  const milieu = tireur.x + tireur.l / 2;
+  if (direction === "haut") return { x: milieu, y: tireur.y, dx: 0, dy: -1 };
+  if (direction === "bas") return { x: milieu, y: tireur.y + tireur.h, dx: 0, dy: 1 };
+  return { x: sens > 0 ? tireur.x + tireur.l : tireur.x, y: tireur.y + tireur.h / 2, dx: sens, dy: 0 };
+}
+
+// Crée un tir pour le tireur (Pokémon ou ennemi)
 function creerTir(tireur, sens, camp, capacite) {
   const projectile = capacite.projectile;
-  const versLeHaut = projectile.direction === "haut";
   tirs.push({
-    x: versLeHaut ? tireur.x + tireur.l / 2 : sens > 0 ? tireur.x + tireur.l : tireur.x,
-    y: versLeHaut ? tireur.y : tireur.y + tireur.h / 2,
-    // dx, dy : de combien le tir avance sur chaque axe pour 1 px parcouru
-    //   dx = 1 vers la droite, -1 vers la gauche ; dy = -1 vers le haut (sur le canvas, y grandit vers le bas)
-    dx: versLeHaut ? 0 : sens,
-    dy: versLeHaut ? -1 : 0,
+    ...departDuTir(tireur, sens, projectile.direction), // x, y, dx, dy
     camp,         // "joueur" ou "ennemi"
     forme: projectile.forme,
     couleur: projectile.couleur,
@@ -30,7 +35,7 @@ function creerTir(tireur, sens, camp, capacite) {
   });
 }
 
-// Le Pokémon tire dans la direction où il regarde (ou vers le haut, pour une capacité comme anti-air)
+// Le Pokémon tire dans la direction où il regarde (ou vers le haut pour anti-air, vers le bas pour bombe beurk)
 function activerCapacite(utilisateur, capacite, camp) {
   const sens = camp === "joueur" ? utilisateur.dir : sensEnnemi(utilisateur);
   creerTir(utilisateur, sens, camp, capacite);
@@ -94,6 +99,10 @@ function dessinerTirs() {
     if (t.forme === "cercle") {
       ctx.fillStyle = t.couleur;
       ellipse(t.x, t.y, r, r);
+    } else if (t.forme === "carre") {
+      // le carré dessiné est exactement sa hitbox
+      ctx.fillStyle = t.couleur;
+      ctx.fillRect(t.x - r, t.y - r, r * 2, r * 2);
     } else {
       // La pointe du triangle regarde là où va le tir (dx, dy) ;
       // les deux autres coins sont derrière, de part et d'autre (px, py : perpendiculaire à dx, dy).

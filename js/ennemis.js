@@ -88,9 +88,15 @@ function sensEnnemi(e) {
 // La zone de détection : un rectangle devant l'ennemi, de la même hauteur que lui.
 // Si sa capacité tire vers le haut (anti-air), c'est un rectangle juste au-dessus de lui, de sa largeur :
 // il tire quand le Pokémon lui saute par-dessus.
+// Si elle tire vers le bas (bombe beurk), c'est un rectangle juste en dessous de lui, de sa largeur :
+// il tire quand le Pokémon passe sous lui.
 function zoneDetection(e) {
-  if (e.capacite?.projectile?.direction === "haut") {
+  const direction = e.capacite?.projectile?.direction;
+  if (direction === "haut") {
     return { x: e.x, y: e.y - DETECTION_ENNEMI, l: e.l, h: DETECTION_ENNEMI };
+  }
+  if (direction === "bas") {
+    return { x: e.x, y: e.y + e.h, l: e.l, h: DETECTION_ENNEMI };
   }
   const sens = sensEnnemi(e);
   return {
