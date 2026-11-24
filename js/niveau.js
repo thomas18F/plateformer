@@ -41,8 +41,42 @@
 // le joueur, les ennemis et les tirs passent à travers.
 //   "arbre" : environ 3 cases de haut, posé en bas de sa case, centré dessus.
 //             Mets-le sur une case juste au-dessus du sol (ligne 14 pour le sol de base).
+//
+// La liste « centresPokemon » (facultative) marche pareil : chaque centre est un bâtiment
+// de 5 cases de large et 3,5 de haut (TAILLE_CENTRE_POKEMON dans reglages.js), posé en bas de sa case et centré dessus.
+// Il ne bloque rien : le Pokémon passe devant, et s'il est blessé, il est soigné entièrement
+// (tous ses PV, et plus de brûlure ni de poison).
 const NIVEAUX = [
-  // ---------- Niveau 1 ----------
+  // ---------- Niveau 1 : une petite pause, sans danger, avec un centre Pokémon pour se soigner ----------
+  {
+    nom: "Le centre Pokémon",
+    fond: "plaine",
+    carte: [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "   P",
+      "########################################",
+      "########################################",
+    ],
+    ennemis: [],
+    centresPokemon: [
+      { colonne: 20, ligne: 14 },
+    ],
+  },
+
+  // ---------- Niveau 2 ----------
   {
     nom: "La plaine",
     fond: "plaine",
@@ -78,7 +112,7 @@ const NIVEAUX = [
     ],
   },
 
-  // ---------- Niveau 2 : plus de trous, plus de pics, et des ennemis qui tirent à travers les murs ----------
+  // ---------- Niveau 3 : plus de trous, plus de pics, et des ennemis qui tirent à travers les murs ----------
   {
     nom: "La forêt",
     fond: "foret",
@@ -121,7 +155,36 @@ const NIVEAUX = [
     ],
   },
 
-  // ---------- Niveau 3 : dans une grotte, avec des passages où le plafond est bas ----------
+  // ---------- Niveau 4 : une petite pause, sans danger, avec un centre Pokémon pour se soigner ----------
+  {
+    nom: "Le centre Pokémon",
+    fond: "plaine",
+    carte: [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "   P",
+      "########################################",
+      "########################################",
+    ],
+    ennemis: [],
+    centresPokemon: [
+      { colonne: 20, ligne: 14 },
+    ],
+  },
+
+  // ---------- Niveau 5 : dans une grotte, avec des passages où le plafond est bas ----------
   {
     nom: "La grotte",
     fond: "grotte",
@@ -156,7 +219,7 @@ const NIVEAUX = [
     ],
   },
 
-  // ---------- Niveau 4 : retour dans la plaine, avec des escaliers et un fantominus dans un bac en briques ----------
+  // ---------- Niveau 6 : retour dans la plaine, avec des escaliers et un fantominus dans un bac en briques ----------
   {
     nom: "Les collines",
     fond: "plaine",
@@ -192,7 +255,36 @@ const NIVEAUX = [
     ],
   },
 
-  // ---------- Niveau 5 : la grande plaine, avec une grande fosse à traverser sur des plateformes ----------
+  // ---------- Niveau 7 : une petite pause, sans danger, avec un centre Pokémon pour se soigner ----------
+  {
+    nom: "Le centre Pokémon",
+    fond: "plaine",
+    carte: [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "   P",
+      "########################################",
+      "########################################",
+    ],
+    ennemis: [],
+    centresPokemon: [
+      { colonne: 20, ligne: 14 },
+    ],
+  },
+
+  // ---------- Niveau 8 : la grande plaine, avec une grande fosse à traverser sur des plateformes ----------
   {
     nom: "La grande plaine",
     fond: "plaine",

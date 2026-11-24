@@ -121,6 +121,11 @@ function majJoueur(dt) {
   majStatut(j, dt); // la brûlure ou le poison font perdre des PV de temps en temps
   if (j.mort) return;
 
+  // Centre Pokémon : le Pokémon passe devant sans être bloqué, et il est soigné s'il est blessé
+  for (const centre of centresPokemon) {
+    if (chevauche(j, centre)) soignerJoueur();
+  }
+
   // Pièces
   for (const p of pieces) {
     if (chevauche(j, p)) {
@@ -189,6 +194,17 @@ function blesserJoueur(degats, tombeDansLeVide = false, couleur = COULEUR_DEGATS
   afficherDegats(joueur, degats, couleur);
   joueur.pv -= degats;
   if (joueur.pv <= 0) mourir(tombeDansLeVide);
+}
+
+// Remet le Pokémon en pleine forme : tous ses PV, et plus de brûlure ni de poison.
+// S'il est déjà en pleine forme, rien ne se passe : il peut rester devant le centre sans être soigné en boucle.
+function soignerJoueur() {
+  const j = joueur;
+  if (j.pv >= j.espece.pv && !j.statut) return;
+  j.pv = j.espece.pv;
+  j.statut = null;
+  ajouterTexte(j.x + j.l / 2, j.y - 10, "Soigné !", COULEUR_SOIN);
+  sons.soin();
 }
 
 function mourir(tombeDansLeVide) {

@@ -14,6 +14,7 @@ const DEGATS_PICS = 10;       // PV perdus en touchant des pics
 const DELAI_PICS = 1;         // secondes pendant lesquelles les pics ne blessent plus, après une piqûre
 const PIECES_BLOC = 3;        // pièces gagnées en frappant un bloc doré
 const CASES_ARRIVEE = 1;      // le niveau est gagné quand le Pokémon entre dans les N dernières colonnes de la carte
+const TAILLE_CENTRE_POKEMON = { l: 160, h: 112 }; // hitbox d'un centre Pokémon (px) : le passer soigne, mais il ne bloque rien
 
 // Le Pokédex : tous les Pokémon du jeu.
 // Les ennemis des niveaux (champ « nom » dans niveau.js) et le Pokémon du joueur (POKEMON_JOUEUR, plus bas) en viennent.
@@ -149,6 +150,7 @@ const CAPACITES_JOUEUR = [
 // Couleur du texte « -5 » qui s'affiche au-dessus d'un personnage qui perd des PV
 const COULEUR_DEGATS_JOUEUR = "#ff5c5c"; // le Pokémon est touché
 const COULEUR_DEGATS_ENNEMI = "#ffe27a"; // un ennemi est touché
+const COULEUR_SOIN = "#7dff9a";          // le texte « Soigné ! » au centre Pokémon
 
 // Comportement de tir ennemi (détection et délai, indépendants du projectile utilisé).
 const DETECTION_ENNEMI = 256; // un ennemi tire si le Pokémon est à moins de ça (px) : devant lui, à sa hauteur, ou juste au-dessus / en dessous de lui pour un tir vers le haut (anti-air) / vers le bas (bombe beurk)

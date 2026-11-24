@@ -8,7 +8,7 @@ let nbPieces = 0;
 let chrono = 0;       // temps passé dans le niveau
 let temps = 0;        // horloge générale pour les animations
 
-let grille, pieces, ennemis, decorations, effets, rebonds, tirs, joueur, depart;
+let grille, pieces, ennemis, decorations, centresPokemon, effets, rebonds, tirs, joueur, depart;
 let largeurNiveau, hauteurNiveau;
 const camera = { x: 0 };
 
@@ -53,6 +53,15 @@ function chargerNiveau() {
     y: (ligne + 1) * TILE,        // bas de la case : posée sur le sol
     type,
     graine: colonne,              // pour que chaque arbre soit un peu différent
+  }));
+
+  // Les centres Pokémon, dans la liste « centresPokemon » du niveau.
+  // Leur hitbox ne bloque personne : elle sert seulement à soigner le Pokémon qui passe devant (joueur.js).
+  centresPokemon = (niveau.centresPokemon || []).map(({ colonne, ligne }) => ({
+    x: colonne * TILE + TILE / 2 - TAILLE_CENTRE_POKEMON.l / 2, // centré sur sa case
+    y: (ligne + 1) * TILE - TAILLE_CENTRE_POKEMON.h,            // posé en bas de sa case
+    l: TAILLE_CENTRE_POKEMON.l,
+    h: TAILLE_CENTRE_POKEMON.h,
   }));
 
   joueur = creerJoueur(depart.x, depart.y);

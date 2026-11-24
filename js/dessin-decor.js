@@ -151,6 +151,72 @@ function dessinerArbre(x, y, graine) {
   ellipse(x - 12 * t, haut - 28 * t, 10 * t, 7 * t);
 }
 
+// ---------- Centres Pokémon : dessinés derrière les personnages, ils ne bloquent personne ----------
+function dessinerCentresPokemon() {
+  for (const centre of centresPokemon) {
+    if (centre.x + centre.l < camera.x || centre.x > camera.x + W) continue; // hors de l'écran
+    dessinerCentrePokemon(centre);
+  }
+}
+
+// Le dessin remplit la hitbox { x, y, l, h } du centre : toit rouge, murs blancs, porte vitrée au milieu
+function dessinerCentrePokemon({ x, y, l, h }) {
+  const milieu = x + l / 2;
+  const bas = y + h;
+  const hautMur = y + 34; // le toit s'arrête là, les murs commencent
+
+  // Les murs blancs, un peu moins larges que le toit, avec une bande rouge en bas
+  ctx.fillStyle = "#f4f1ea";
+  ctx.fillRect(x + 6, hautMur, l - 12, bas - hautMur);
+  ctx.fillStyle = "#d9d3c7"; // l'ombre du toit
+  ctx.fillRect(x + 6, hautMur, l - 12, 6);
+  ctx.fillStyle = "#d84343";
+  ctx.fillRect(x + 6, bas - 10, l - 12, 10);
+
+  // Le toit rouge
+  ctx.fillStyle = "#e53935";
+  ctx.fillRect(x, y + 6, l, hautMur - y - 6);
+  ctx.fillStyle = "#ff7a6b"; // reflet en haut
+  ctx.fillRect(x, y + 6, l, 4);
+  ctx.fillStyle = "#9e1f1f"; // bord sombre en bas
+  ctx.fillRect(x, hautMur - 5, l, 5);
+
+  // Deux fenêtres, de chaque côté de la porte
+  vitre(x + 20, hautMur + 22, 30, 24);
+  vitre(x + l - 50, hautMur + 22, 30, 24);
+
+  // La porte vitrée à deux battants, posée sur le sol
+  vitre(milieu - 20, bas - 48, 40, 48);
+  ctx.fillStyle = "#5b6470";
+  ctx.fillRect(milieu - 1, bas - 48, 2, 48);
+
+  // L'emblème Poké Ball au milieu du toit
+  const cy = y + 20;
+  ctx.fillStyle = "#2b2b2b";
+  ellipse(milieu, cy, 16, 16); // le contour
+  ctx.fillStyle = "#f4f1ea";
+  ellipse(milieu, cy, 14, 14); // la moitié blanche, en bas
+  ctx.fillStyle = "#e53935";
+  ctx.beginPath();
+  ctx.arc(milieu, cy, 14, Math.PI, 0); // la moitié rouge, en haut
+  ctx.fill();
+  ctx.fillStyle = "#2b2b2b";
+  ctx.fillRect(milieu - 14, cy - 1.5, 28, 3); // la bande noire
+  ellipse(milieu, cy, 5.5, 5.5);
+  ctx.fillStyle = "#f4f1ea";
+  ellipse(milieu, cy, 3.5, 3.5); // le bouton
+}
+
+// Une vitre bleu clair dans un cadre gris, avec un reflet dans le coin en haut à gauche
+function vitre(x, y, l, h) {
+  ctx.fillStyle = "#5b6470";
+  ctx.fillRect(x - 2, y - 2, l + 4, h + 4);
+  ctx.fillStyle = "#9fd8f5";
+  ctx.fillRect(x, y, l, h);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+  triangle(x, y, x + l * 0.5, y, x, y + h * 0.5);
+}
+
 // ---------- Décor ----------
 function dessinerDecor() {
   const c1 = Math.floor(camera.x / TILE);
