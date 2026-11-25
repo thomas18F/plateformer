@@ -125,9 +125,13 @@ function majJoueur(dt, obeitAuxTouches = true) {
   majStatut(j, dt); // la brûlure ou le poison font perdre des PV de temps en temps
   if (j.mort) return;
 
-  // Centre Pokémon : le Pokémon passe devant sans être bloqué, et il est soigné s'il est blessé
+  // Centre Pokémon : le Pokémon passe devant sans être bloqué, et il est soigné s'il est blessé.
+  // Le centre devient aussi le point de sauvegarde (s'il est K.O., c'est là qu'il reprendra),
+  // et les niveaux déjà quittés repartent à neuf (sauvegarderAuCentre).
   for (const centre of centresPokemon) {
-    if (chevauche(j, centre)) soignerJoueur();
+    if (!chevauche(j, centre)) continue;
+    soignerJoueur();
+    sauvegarderAuCentre(centre);
   }
 
   // Pièces

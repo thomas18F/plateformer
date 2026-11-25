@@ -49,6 +49,8 @@
 // de 5 cases de large et 3,5 de haut (TAILLE_CENTRE_POKEMON dans reglages.js), posé en bas de sa case et centré dessus.
 // Il ne bloque rien : le Pokémon passe devant, et s'il est blessé, il est soigné entièrement
 // (tous ses PV, et plus de brûlure ni de poison).
+// Passer devant enregistre aussi le point de sauvegarde (là où il reprend s'il est K.O.),
+// et remet à neuf les niveaux déjà quittés : leurs ennemis, leurs pièces et leurs blocs bonus reviennent.
 const NIVEAUX = [
   // ---------- Niveau 1 : une petite pause, sans danger, avec un centre Pokémon pour se soigner ----------
   {

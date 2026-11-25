@@ -44,7 +44,11 @@ function mettreAJour(dt) {
       break;
     case "gameover":
       majEffets(dt);
-      if (appuye.entree) nouvellePartie();
+      // Retour au dernier centre Pokémon ; s'il n'est passé devant aucun, tout recommence au niveau 1
+      if (appuye.entree) {
+        if (pointDeSauvegarde) reprendreAuCentre();
+        else nouvellePartie();
+      }
       break;
   }
   appuye = {};

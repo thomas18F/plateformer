@@ -6,6 +6,9 @@ let etat = "titre";   // titre | carte | jeu | transition | pause | victoire | g
 let numeroNiveau = 0; // le niveau où est le Pokémon : sa position dans NIVEAUX (0 = niveau 1)
 let niveauMaxAtteint = 0; // le niveau le plus loin où il est allé : ceux d'après sont fermés sur la carte
 let niveauxVisites = {}; // numéro d'un niveau déjà quitté → { grille, pieces, ennemis } tels qu'on les a laissés
+                         // (vidé à chaque passage devant un centre Pokémon : voir sauvegarderAuCentre)
+let pointDeSauvegarde = null; // le dernier centre Pokémon devant lequel le Pokémon est passé : { niveau, colonne, ligne }
+                              // (null tant qu'il n'en a croisé aucun). S'il est K.O., il reprend là (reprendreAuCentre).
 let nbPieces = 0;
 let chrono = 0;       // temps passé dans le niveau
 let temps = 0;        // horloge générale pour les animations
@@ -14,9 +17,10 @@ let grille, pieces, ennemis, decorations, centresPokemon, effets, rebonds, tirs,
 let largeurNiveau, hauteurNiveau;
 const camera = { x: 0 };
 
-// entree : par quel bord le Pokémon arrive.
+// entree : par où le Pokémon arrive.
 //   "gauche" : au départ P (début de partie, ou en venant du niveau précédent)
 //   "droite" : au bout du niveau, en revenant du niveau suivant (voir arriveeParLaDroite)
+//   "centre" : devant le centre Pokémon du point de sauvegarde, après un K.O. (voir reprendreAuCentre)
 function chargerNiveau(entree = "gauche") {
   const niveau = NIVEAUX[numeroNiveau];
   const carte = niveau.carte;
@@ -68,6 +72,7 @@ function chargerNiveau(entree = "gauche") {
   // Les centres Pokémon, dans la liste « centresPokemon » du niveau.
   // Leur hitbox ne bloque personne : elle sert seulement à soigner le Pokémon qui passe devant (joueur.js).
   centresPokemon = (niveau.centresPokemon || []).map(({ colonne, ligne }) => ({
+    colonne, ligne, // sa case : c'est elle que retient le point de sauvegarde
     x: colonne * TILE + TILE / 2 - TAILLE_CENTRE_POKEMON.l / 2, // centré sur sa case
     y: (ligne + 1) * TILE - TAILLE_CENTRE_POKEMON.h,            // posé en bas de sa case
     l: TAILLE_CENTRE_POKEMON.l,
@@ -78,6 +83,9 @@ function chargerNiveau(entree = "gauche") {
     const arrivee = arriveeParLaDroite();
     joueur = creerJoueur(arrivee.x, arrivee.y);
     joueur.dir = -1; // il regarde vers la gauche : il vient de la droite
+  } else if (entree === "centre") {
+    // posé sur la case du centre, comme sur un départ : au milieu du bâtiment, sur le sol
+    joueur = creerJoueur(pointDeSauvegarde.colonne * TILE, pointDeSauvegarde.ligne * TILE);
   } else {
     joueur = creerJoueur(depart.x, depart.y);
   }
@@ -102,6 +110,7 @@ function nouvellePartie() {
   numeroNiveau = 0;
   niveauMaxAtteint = 0;
   niveauxVisites = {};
+  pointDeSauvegarde = null;
   nbPieces = 0;
   chargerNiveau();
   etat = "jeu";
@@ -110,7 +119,8 @@ function nouvellePartie() {
 // Change de niveau : appelé par la transition (transition.js), quand l'écran est tout noir.
 //   sens = 1  : le Pokémon est sorti par la droite : il va au niveau suivant et arrive au départ P
 //   sens = -1 : il est sorti par la gauche : il revient au niveau précédent et arrive au bout, à droite
-// Le niveau qu'il quitte est mémorisé tel quel (niveauxVisites) : rien n'y réapparaîtra.
+// Le niveau qu'il quitte est mémorisé tel quel (niveauxVisites) : rien n'y réapparaîtra,
+// jusqu'à ce qu'il passe devant un centre Pokémon (sauvegarderAuCentre).
 // Le Pokémon n'est pas soigné : il garde ses pièces, ses PV et son statut (brûlure, poison…).
 function changerDeNiveau(sens) {
   niveauxVisites[numeroNiveau] = { grille, pieces, ennemis };
@@ -120,6 +130,24 @@ function changerDeNiveau(sens) {
   chargerNiveau(sens === 1 ? "gauche" : "droite");
   joueur.pv = pv;                // …on lui rend donc son état d'avant
   joueur.statut = statut;
+}
+
+// Le Pokémon passe devant un centre Pokémon (joueur.js) : ce centre devient le point de sauvegarde,
+// et tous les niveaux qu'il a quittés repartent à neuf : leurs ennemis, leurs pièces et leurs blocs bonus reviennent.
+// Le niveau où il est, lui, ne change pas : rien ne réapparaît sous ses yeux.
+function sauvegarderAuCentre(centre) {
+  pointDeSauvegarde = { niveau: numeroNiveau, colonne: centre.colonne, ligne: centre.ligne };
+  niveauxVisites = {};
+}
+
+// Le Pokémon est K.O. : il repart en pleine forme devant le dernier centre Pokémon où il est passé.
+// Comme à chaque passage devant un centre, tous les niveaux repartent à neuf, y compris celui où il est tombé.
+// Il garde ses pièces.
+function reprendreAuCentre() {
+  numeroNiveau = pointDeSauvegarde.niveau;
+  niveauxVisites = {};
+  chargerNiveau("centre"); // chargerNiveau crée un Pokémon tout neuf : tous ses PV, sans statut
+  etat = "jeu";
 }
 
 function estDernierNiveau() {

@@ -55,6 +55,9 @@ function dessinerEcran() {
       `Temps : ${Math.floor(chrono)} s`,
     ], 240);
     invite("Entrée pour rejouer");
+  } else if (etat === "gameover" && pointDeSauvegarde) {
+    titre("K.O. !", "#ff7d7d");
+    invite("Entrée pour retourner au centre Pokémon");
   } else if (etat === "gameover") {
     titre("Partie terminée", "#ff7d7d");
     invite("Entrée pour recommencer");
