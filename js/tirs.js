@@ -26,6 +26,8 @@ function creerTir(tireur, sens, camp, capacite) {
     forme: projectile.forme,
     couleur: projectile.couleur,
     rayon: projectile.rayon,
+    longueur: projectile.longueur,   // pour un rectangle : sa taille dans le sens du tir…
+    epaisseur: projectile.epaisseur, // …et en travers
     spectral: projectile.spectral,
     vitesse: projectile.vitesse, // px/s
     portee: projectile.portee,  // distance maximale (px)
@@ -76,8 +78,15 @@ function majTirs(dt) {
   tirs = tirs.filter((tir) => tir.parcouru < tir.portee && !tir.arrete);
 }
 
-// La hitbox d'un tir : un petit carré autour du dessin
+// La hitbox d'un tir : un petit carré autour du dessin,
+// ou pour un rectangle, le rectangle lui-même, couché pour un tir horizontal et debout pour un tir vertical.
 function hitboxTir(tir) {
+  if (tir.forme === "rectangle") {
+    const horizontal = tir.dx !== 0;
+    const l = horizontal ? tir.longueur : tir.epaisseur;
+    const h = horizontal ? tir.epaisseur : tir.longueur;
+    return { x: tir.x - l / 2, y: tir.y - h / 2, l, h };
+  }
   return { x: tir.x - tir.rayon, y: tir.y - tir.rayon, l: tir.rayon * 2, h: tir.rayon * 2 };
 }
 
@@ -103,6 +112,11 @@ function dessinerTirs() {
       // le carré dessiné est exactement sa hitbox
       ctx.fillStyle = t.couleur;
       ctx.fillRect(t.x - r, t.y - r, r * 2, r * 2);
+    } else if (t.forme === "rectangle") {
+      // pareil : le rectangle dessiné est exactement sa hitbox
+      const zone = hitboxTir(t);
+      ctx.fillStyle = t.couleur;
+      ctx.fillRect(zone.x, zone.y, zone.l, zone.h);
     } else {
       // La pointe du triangle regarde là où va le tir (dx, dy) ;
       // les deux autres coins sont derrière, de part et d'autre (px, py : perpendiculaire à dx, dy).

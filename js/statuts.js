@@ -1,15 +1,17 @@
 // =====================================================
-//  Un Pokémon touché par une capacité, et les statuts (brûlure, poison…)
+//  Un Pokémon touché par une capacité, les statuts (brûlure, poison…) et le ralentissement (sécrétion)
 //  Les réglages des statuts sont dans STATUTS (reglages.js).
 // =====================================================
 
 // La cible (le Pokémon ou un ennemi) est touchée par une capacité de l'attaquant :
-// elle perd des PV (calculerDegats), puis la capacité peut lui retirer un type et lui donner un statut.
+// elle perd des PV (calculerDegats, sauf pour une capacité « sansDegats »),
+// puis la capacité peut lui retirer un type, lui donner un statut et la ralentir.
 // attaquant : celui qui a utilisé la capacité (pour un tir, celui qui a tiré).
 function subirCapacite(cible, capacite, attaquant) {
-  blesser(cible, calculerDegats(attaquant, capacite, cible));
+  if (!capacite.sansDegats) blesser(cible, calculerDegats(attaquant, capacite, cible));
   retirerType(cible, capacite);
   tenterStatut(cible, capacite);
+  ralentir(cible, capacite);
 }
 
 // Les dégâts d'une capacité :
@@ -72,6 +74,30 @@ function majStatut(cible, dt) {
   blesser(cible, regle.degats, regle.couleur);
 }
 
+// Certaines capacités ralentissent la cible (« ralentissement » dans CAPACITES) : sécrétion.
+// Ça marche à chaque fois, quels que soient ses types, et ça ne compte pas comme un statut :
+// un Pokémon brûlé ou empoisonné peut aussi être ralenti.
+// S'il est touché alors qu'il est déjà ralenti, le ralentissement repart pour toute sa durée (il ne se cumule pas).
+function ralentir(cible, capacite) {
+  const regle = capacite.ralentissement;
+  if (!regle || cible.mort) return;
+  cible.ralentissement = { facteur: regle.facteur, tempsRestant: regle.duree };
+  ajouterTexte(cible.x + cible.l / 2, cible.y - 28, "Ralenti !", COULEUR_RALENTISSEMENT);
+}
+
+// À chaque image : le ralentissement s'use, puis s'arrête au bout de sa durée
+function majRalentissement(cible, dt) {
+  const r = cible.ralentissement;
+  if (!r) return;
+  r.tempsRestant -= dt;
+  if (r.tempsRestant <= 0) cible.ralentissement = null;
+}
+
+// Ce par quoi multiplier la vitesse de marche de la cible : 1 si elle n'est pas ralentie
+function facteurVitesse(cible) {
+  return cible.ralentissement ? cible.ralentissement.facteur : 1;
+}
+
 // Des petites bulles de la couleur du statut montent le long des Pokémon qui en ont un
 function dessinerStatuts() {
   for (const cible of [joueur, ...ennemis]) {
@@ -86,6 +112,18 @@ function dessinerStatuts() {
         3, 3,
       );
     }
+  }
+  ctx.globalAlpha = 1;
+}
+
+// Deux fils de sécrétion restent collés en travers des Pokémon ralentis
+function dessinerRalentissements() {
+  ctx.fillStyle = COULEUR_RALENTISSEMENT;
+  ctx.globalAlpha = 0.7;
+  for (const cible of [joueur, ...ennemis]) {
+    if (!cible.ralentissement || cible.mort) continue;
+    ctx.fillRect(cible.x, cible.y + cible.h * 0.4, cible.l, 2);
+    ctx.fillRect(cible.x, cible.y + cible.h * 0.7, cible.l, 2);
   }
   ctx.globalAlpha = 1;
 }

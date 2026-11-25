@@ -121,15 +121,16 @@ function nouvellePartie() {
 //   sens = -1 : il est sorti par la gauche : il revient au niveau précédent et arrive au bout, à droite
 // Le niveau qu'il quitte est mémorisé tel quel (niveauxVisites) : rien n'y réapparaîtra,
 // jusqu'à ce qu'il passe devant un centre Pokémon (sauvegarderAuCentre).
-// Le Pokémon n'est pas soigné : il garde ses pièces, ses PV et son statut (brûlure, poison…).
+// Le Pokémon n'est pas soigné : il garde ses pièces, ses PV, son statut (brûlure, poison…) et son ralentissement.
 function changerDeNiveau(sens) {
   niveauxVisites[numeroNiveau] = { grille, pieces, ennemis };
-  const { pv, statut } = joueur; // chargerNiveau crée un Pokémon tout neuf, en pleine forme…
+  const { pv, statut, ralentissement } = joueur; // chargerNiveau crée un Pokémon tout neuf, en pleine forme…
   numeroNiveau += sens;
   niveauMaxAtteint = Math.max(niveauMaxAtteint, numeroNiveau);
   chargerNiveau(sens === 1 ? "gauche" : "droite");
   joueur.pv = pv;                // …on lui rend donc son état d'avant
   joueur.statut = statut;
+  joueur.ralentissement = ralentissement;
 }
 
 // Le Pokémon passe devant un centre Pokémon (joueur.js) : ce centre devient le point de sauvegarde,

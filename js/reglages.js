@@ -45,10 +45,14 @@ const POKEMON_JOUEUR = "salameche";
 //   type  : le type Pokémon de la capacité (« feu », « poison »…), comme les types du POKEDEX
 //   effet : ce que fait la capacité : « projectile » (un tir), « ecrasement » ou « charge »
 //   attaque : s'ajoute à l'attaque du Pokémon qui l'utilise, pour calculer les dégâts (voir « attaque » dans le POKEDEX)
+//   sansDegats (facultatif) : true = la capacité ne fait jamais perdre de PV (elle n'a alors pas besoin d'« attaque »)
 //   statut (facultatif) : { nom, chance } : la cible a « chance » d'attraper ce statut (0.1 = 10 %), voir STATUTS plus bas
 //   retireType (facultatif) : la cible perd ce type si elle l'a, une fois les dégâts calculés (ils comptent donc encore ce type)
+//   ralentissement (facultatif) : { facteur, duree } : la cible marche à « facteur » fois sa vitesse (0.7 = 70 %)
+//               pendant « duree » secondes, à chaque fois qu'elle est touchée (voir ralentir dans statuts.js)
 // Pour un projectile :
-//   forme     : « cercle », « triangle » (la pointe dans le sens du tir) ou « carre »
+//   forme     : « cercle », « triangle » (la pointe dans le sens du tir), « carre » (de côté 2 × rayon)
+//               ou « rectangle » (« longueur » dans le sens du tir, « epaisseur » en travers, au lieu de « rayon »)
 //   direction : « avant » (part devant le tireur, dans le sens où il regarde), « haut » (part du haut de sa tête, vers le ciel)
 //               ou « bas » (part de sous ses pieds, vers le sol)
 //   spectral  : true = traverse les blocs
@@ -91,6 +95,14 @@ const CAPACITES = [
     attaque: 5,
     statut: { nom: "poison", chance: 0.3 },
     projectile: { forme: "carre", couleur: "#6d28d9", rayon: 6, direction: "bas", spectral: false, vitesse: 360, portee: 320 },
+  },
+  {
+    id: "secretion",
+    type: "insecte",
+    effet: "projectile",
+    sansDegats: true,
+    ralentissement: { facteur: 0.7, duree: 20 },
+    projectile: { forme: "rectangle", couleur: "#ffffff", longueur: 16, epaisseur: 6, direction: "avant", spectral: false, vitesse: 360, portee: 320 },
   },
   {
     id: "ecrasement",
@@ -162,6 +174,7 @@ const CAPACITES_JOUEUR = [
 const COULEUR_DEGATS_JOUEUR = "#ff5c5c"; // le Pokémon est touché
 const COULEUR_DEGATS_ENNEMI = "#ffe27a"; // un ennemi est touché
 const COULEUR_SOIN = "#7dff9a";          // le texte « Soigné ! » au centre Pokémon
+const COULEUR_RALENTISSEMENT = "#ffffff"; // le texte « Ralenti ! » et les fils collés sur un Pokémon ralenti (sécrétion)
 
 // Comportement de tir ennemi (détection et délai, indépendants du projectile utilisé).
 const DETECTION_ENNEMI = 256; // un ennemi tire si le Pokémon est à moins de ça (px) : devant lui, à sa hauteur, ou juste au-dessus / en dessous de lui pour un tir vers le haut (anti-air) / vers le bas (bombe beurk)

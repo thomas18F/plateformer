@@ -23,6 +23,7 @@ function creerJoueur(x, y) {
     types: [...espece.types], // une copie, comme pour les ennemis : on peut la changer sans toucher au POKEDEX
     delaiPics: 0,  // tant que c'est > 0, les pics ne blessent pas
     statut: null,  // brûlure, poison… (voir statuts.js)
+    ralentissement: null, // sécrétion (voir ralentir dans statuts.js)
     mort: false, timerMort: 0,
   };
 }
@@ -57,7 +58,7 @@ function majJoueur(dt, obeitAuxTouches = true) {
     j.dir = sens;
     let accel = j.auSol ? ACCEL_SOL : ACCEL_AIR;
     if (j.vx * sens < 0) accel *= 2; // demi-tour plus nerveux
-    j.vx = approcher(j.vx, sens * VITESSE_MARCHE, accel * dt);
+    j.vx = approcher(j.vx, sens * VITESSE_MARCHE * facteurVitesse(j), accel * dt); // moins vite s'il est ralenti
   } else {
     j.vx = approcher(j.vx, 0, (j.auSol ? FRICTION_SOL : FRICTION_SOL * 0.25) * dt);
   }
@@ -122,6 +123,7 @@ function majJoueur(dt, obeitAuxTouches = true) {
     blesserJoueur(DEGATS_PICS);
     if (j.mort) return;
   }
+  majRalentissement(j, dt);
   majStatut(j, dt); // la brûlure ou le poison font perdre des PV de temps en temps
   if (j.mort) return;
 
@@ -207,13 +209,14 @@ function blesserJoueur(degats, tombeDansLeVide = false, couleur = COULEUR_DEGATS
   if (joueur.pv <= 0) mourir(tombeDansLeVide);
 }
 
-// Remet le Pokémon en pleine forme : tous ses PV, et plus de brûlure ni de poison.
+// Remet le Pokémon en pleine forme : tous ses PV, plus de brûlure ni de poison, et plus ralenti.
 // S'il est déjà en pleine forme, rien ne se passe : il peut rester devant le centre sans être soigné en boucle.
 function soignerJoueur() {
   const j = joueur;
-  if (j.pv >= j.espece.pv && !j.statut) return;
+  if (j.pv >= j.espece.pv && !j.statut && !j.ralentissement) return;
   j.pv = j.espece.pv;
   j.statut = null;
+  j.ralentissement = null;
   ajouterTexte(j.x + j.l / 2, j.y - 10, "Soigné !", COULEUR_SOIN);
   sons.soin();
 }

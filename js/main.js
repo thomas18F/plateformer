@@ -76,6 +76,7 @@ function dessiner() {
   for (const e of ennemis) dessinerEnnemi(e);
   dessinerJoueur();
   dessinerStatuts(); // les bulles de brûlure ou de poison, par-dessus les Pokémon
+  dessinerRalentissements(); // les fils de sécrétion, par-dessus les Pokémon aussi
   dessinerTirs();
   dessinerEffets();
   ctx.restore();

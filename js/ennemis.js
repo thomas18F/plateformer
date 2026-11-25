@@ -16,6 +16,7 @@ function creerEnnemi(x, y, nom, capaciteId) {
     capacite: CAPACITES.find((c) => c.id === capaciteId) || null,
     attenteTir: 0, // secondes à attendre avant de pouvoir tirer à nouveau
     statut: null,  // brûlure, poison… (voir statuts.js)
+    ralentissement: null, // sécrétion (voir ralentir dans statuts.js)
     actif: false, mort: false, ejecte: false, timer: 0, anim: Math.random() * 10,
   };
 }
@@ -39,13 +40,15 @@ function majEnnemis(dt) {
 
     majStatut(e, dt); // la brûlure ou le poison font perdre des PV de temps en temps
     if (e.mort) continue;
+    majRalentissement(e, dt);
+    e.vx = sensEnnemi(e) * vitesseEnnemi(e); // il ralentit dès qu'il est touché, et repart à sa vitesse dès la fin
 
     e.anim += dt;
     appliquerGravite(e, dt, estVolant(e) ? 0 : 1); // un ennemi de type vol flotte : il reste à sa hauteur
     const sens = Math.sign(e.vx);
     const res = deplacer(e, dt);
     if (res.mur) {
-      e.vx = -sens * e.espece.vitesse;
+      e.vx = -sens * vitesseEnnemi(e);
     } else if (res.sol) {
       // Demi-tour au bord du vide
       const devant = sens > 0 ? e.x + e.l + 1 : e.x - 1;
@@ -73,12 +76,17 @@ function majEnnemis(dt) {
       const a = ennemis[i], b = ennemis[k];
       if (a.mort || b.mort || !chevauche(a, b)) continue;
       const aGauche = a.x < b.x;
-      a.vx = aGauche ? -a.espece.vitesse : a.espece.vitesse;
-      b.vx = aGauche ? b.espece.vitesse : -b.espece.vitesse;
+      a.vx = aGauche ? -vitesseEnnemi(a) : vitesseEnnemi(a);
+      b.vx = aGauche ? vitesseEnnemi(b) : -vitesseEnnemi(b);
     }
   }
 
   ennemis = ennemis.filter((e) => !e.mort || e.timer > 0);
+}
+
+// La vitesse de marche de l'ennemi (px/s) : celle de son espèce, moins s'il est ralenti (sécrétion)
+function vitesseEnnemi(e) {
+  return e.espece.vitesse * facteurVitesse(e);
 }
 
 // Le sens dans lequel l'ennemi marche : 1 = vers la droite, -1 = vers la gauche
