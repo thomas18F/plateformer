@@ -19,11 +19,3 @@ function efficacite(typeAttaque, cible) {
 function estVolant(pokemon) {
   return pokemon.types.includes("vol");
 }
-
-// Les dégâts d'une capacité de type « typeAttaque » contre une cible, une fois l'efficacité appliquée.
-// Arrondis à un nombre entier de PV, et au moins 1 PV, sauf si la capacité n'a aucun effet (×0).
-function degatsSelonTypes(degats, typeAttaque, cible) {
-  const multiplicateur = efficacite(typeAttaque, cible);
-  if (multiplicateur === 0) return 0;
-  return Math.max(1, Math.round(degats * multiplicateur));
-}

@@ -29,8 +29,8 @@ function creerTir(tireur, sens, camp, capacite) {
     spectral: projectile.spectral,
     vitesse: projectile.vitesse, // px/s
     portee: projectile.portee,  // distance maximale (px)
-    degats: projectile.degats,   // avant l'efficacité des types
-    capacite,     // la capacité qui a tiré : son type (pour l'efficacité) et son statut (brûlure…)
+    tireur,       // celui qui a tiré : son attaque compte dans les dégâts
+    capacite,     // la capacité qui a tiré : son attaque, son type (pour l'efficacité) et son statut (brûlure…)
     parcouru: 0,  // distance déjà parcourue (px)
   });
 }
@@ -64,12 +64,12 @@ function majTirs(dt) {
     if (tir.camp === "joueur") {
       const ennemi = ennemiTouchePar(tir);
       if (ennemi) {
-        subirCapacite(ennemi, tir.capacite, tir.degats);
+        subirCapacite(ennemi, tir.capacite, tir.tireur);
         tir.arrete = true; // un tir ne blesse qu'un seul ennemi
       }
     } else if (etat === "jeu" && chevauche(hitboxTir(tir), joueur)) {
       // (pas si le Pokémon est arrivé au bout ou pendant la transition : il est invulnérable)
-      subirCapacite(joueur, tir.capacite, tir.degats);
+      subirCapacite(joueur, tir.capacite, tir.tireur);
       tir.arrete = true;
     }
   }

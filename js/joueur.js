@@ -151,12 +151,12 @@ function majJoueur(dt, obeitAuxTouches = true) {
     const tombeSurLeDessus = tombait && basAvant <= e.y + 12;
     if (tombeSurLeDessus && j.dureeEcrasement > 0) {
       const capaciteEcrasement = CAPACITES.find((c) => c.id === "ecrasement");
-      subirCapacite(e, capaciteEcrasement, capaciteEcrasement.degats);
+      subirCapacite(e, capaciteEcrasement, j);
       j.vy = tenues.saut ? -FORCE_SAUT : -FORCE_SAUT * 0.6;
     } else if (j.dureeCharge > 0 && !tombeSurLeDessus) {
       if (!j.ennemisTouchésParCharge.has(e)) {
         const capaciteCharge = CAPACITES.find((c) => c.id === "charge");
-        subirCapacite(e, capaciteCharge, capaciteCharge.degats);
+        subirCapacite(e, capaciteCharge, j);
         j.ennemisTouchésParCharge.add(e);
       }
     }

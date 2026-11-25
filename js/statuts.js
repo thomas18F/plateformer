@@ -3,13 +3,25 @@
 //  Les réglages des statuts sont dans STATUTS (reglages.js).
 // =====================================================
 
-// La cible (le Pokémon ou un ennemi) est touchée par une capacité :
-// elle perd des PV selon ses types, puis la capacité peut lui retirer un type et lui donner un statut.
-// degats : avant l'efficacité des types (pour un tir, ce sont ceux de son projectile).
-function subirCapacite(cible, capacite, degats) {
-  blesser(cible, degatsSelonTypes(degats, capacite.type, cible));
+// La cible (le Pokémon ou un ennemi) est touchée par une capacité de l'attaquant :
+// elle perd des PV (calculerDegats), puis la capacité peut lui retirer un type et lui donner un statut.
+// attaquant : celui qui a utilisé la capacité (pour un tir, celui qui a tiré).
+function subirCapacite(cible, capacite, attaquant) {
+  blesser(cible, calculerDegats(attaquant, capacite, cible));
   retirerType(cible, capacite);
   tenterStatut(cible, capacite);
+}
+
+// Les dégâts d'une capacité :
+//   (attaque de l'attaquant + attaque de la capacité − défense de la cible) × efficacité des types
+// L'attaque et la défense viennent de leurs fiches du POKEDEX, l'efficacité des types de la cible telle qu'elle est maintenant.
+// Arrondis à un nombre entier de PV, et au moins 1 PV (même si la défense est plus forte que l'attaque),
+// sauf si la capacité n'a aucun effet sur la cible (×0).
+function calculerDegats(attaquant, capacite, cible) {
+  const multiplicateur = efficacite(capacite.type, cible);
+  if (multiplicateur === 0) return 0;
+  const avantTypes = attaquant.espece.attaque + capacite.attaque - cible.espece.defense;
+  return Math.max(1, Math.round(avantTypes * multiplicateur));
 }
 
 // Certaines capacités font perdre un type à la cible (« retireType » dans CAPACITES) :

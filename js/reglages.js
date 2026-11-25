@@ -25,12 +25,16 @@ const TAILLE_CENTRE_POKEMON = { l: 160, h: 112 }; // hitbox d'un centre Pokémon
 //   types   : les types du Pokémon (« feu », « poison »…), autant qu'on veut : leurs multiplicateurs se multiplient (types.js).
 //             Un ennemi de type vol flotte dans les airs ; s'il perd ce type (anti-air), il tombe (voir estVolant dans types.js).
 //   valeur  : pièces gagnées quand on bat un ennemi de cette espèce
+//   attaque : s'ajoute à l'attaque de la capacité qu'il utilise
+//   defense : se retire des dégâts qu'il reçoit d'une capacité
+//             Dégâts = (attaque du Pokémon + attaque de la capacité − défense de la cible) × efficacité des types
+//             (voir calculerDegats dans statuts.js)
 // Le dessin de chaque Pokémon est dans dessin-personnages.js.
 const POKEDEX = [
-  { id: "aspicot", l: 28, h: 24, pv: 10, vitesse: 60, types: ["insecte", "poison"], valeur: 1 },    // petite chenille jaune avec deux dards
-  { id: "simularbre", l: 44, h: 60, pv: 20, vitesse: 40, types: ["roche"], valeur: 3 },             // faux arbre qui marche : presque 2 cases de haut
-  { id: "salameche", l: 22, h: 30, pv: 20, vitesse: 70, types: ["feu"], valeur: 4 },                // petit lézard orange, flamme au bout de la queue
-  { id: "fantominus", l: 28, h: 28, pv: 16, vitesse: 50, types: ["spectre", "poison", "vol"], valeur: 2 }, // boule de gaz sombre dans un halo violet : elle flotte
+  { id: "aspicot", l: 28, h: 24, pv: 10, vitesse: 60, attaque: 5, defense: 5, types: ["insecte", "poison"], valeur: 1 },    // petite chenille jaune avec deux dards
+  { id: "simularbre", l: 44, h: 60, pv: 20, vitesse: 40, attaque: 5, defense: 5, types: ["roche"], valeur: 3 },             // faux arbre qui marche : presque 2 cases de haut
+  { id: "salameche", l: 22, h: 30, pv: 20, vitesse: 70, attaque: 10, defense: 5, types: ["feu"], valeur: 4 },                // petit lézard orange, flamme au bout de la queue
+  { id: "fantominus", l: 28, h: 28, pv: 16, vitesse: 50, attaque: 5, defense: 5, types: ["spectre", "poison", "vol"], valeur: 2 }, // boule de gaz sombre dans un halo violet : elle flotte
 ];
 
 // Le Pokémon que l'on joue : un id du POKEDEX. Sa taille, ses PV, ses types et son dessin viennent de sa fiche.
@@ -40,6 +44,7 @@ const POKEMON_JOUEUR = "salameche";
 // Capacités disponibles dans le jeu : description indépendante des utilisateurs.
 //   type  : le type Pokémon de la capacité (« feu », « poison »…), comme les types du POKEDEX
 //   effet : ce que fait la capacité : « projectile » (un tir), « ecrasement » ou « charge »
+//   attaque : s'ajoute à l'attaque du Pokémon qui l'utilise, pour calculer les dégâts (voir « attaque » dans le POKEDEX)
 //   statut (facultatif) : { nom, chance } : la cible a « chance » d'attraper ce statut (0.1 = 10 %), voir STATUTS plus bas
 //   retireType (facultatif) : la cible perd ce type si elle l'a, une fois les dégâts calculés (ils comptent donc encore ce type)
 // Pour un projectile :
@@ -52,49 +57,54 @@ const CAPACITES = [
     id: "flammeche",
     type: "feu",
     effet: "projectile",
+    attaque: 5,
     statut: { nom: "brulure", chance: 0.1 },
-    projectile: { forme: "cercle", couleur: "#e53935", rayon: 5, direction: "avant", spectral: false, vitesse: 480, portee: 320, degats: 5 },
+    projectile: { forme: "cercle", couleur: "#e53935", rayon: 5, direction: "avant", spectral: false, vitesse: 480, portee: 320 },
   },
   {
     id: "dard-venin",
     type: "poison",
     effet: "projectile",
+    attaque: 5,
     statut: { nom: "poison", chance: 0.1 },
-    projectile: { forme: "triangle", couleur: "#6d28d9", rayon: 5, direction: "avant", spectral: false, vitesse: 200, portee: 320, degats: 5 },
+    projectile: { forme: "triangle", couleur: "#6d28d9", rayon: 5, direction: "avant", spectral: false, vitesse: 200, portee: 320 },
   },
   {
     id: "balle-ombre",
     type: "spectre",
     effet: "projectile",
-    projectile: { forme: "cercle", couleur: "#6d28d9", rayon: 8, direction: "avant", spectral: true, vitesse: 240, portee: 320, degats: 5 },
+    attaque: 5,
+    projectile: { forme: "cercle", couleur: "#6d28d9", rayon: 8, direction: "avant", spectral: true, vitesse: 240, portee: 320 },
   },
   {
     id: "anti-air",
     type: "roche",
     effet: "projectile",
+    attaque: 5,
     retireType: "vol", // la cible tombe : elle n'est plus de type vol
-    projectile: { forme: "triangle", couleur: "#8d6e63", rayon: 6, direction: "haut", spectral: false, vitesse: 420, portee: 320, degats: 5 },
+    projectile: { forme: "triangle", couleur: "#8d6e63", rayon: 6, direction: "haut", spectral: false, vitesse: 420, portee: 320 },
   },
   {
     id: "bombe-beurk",
     type: "poison",
     effet: "projectile",
+    attaque: 5,
     statut: { nom: "poison", chance: 0.3 },
-    projectile: { forme: "carre", couleur: "#6d28d9", rayon: 6, direction: "bas", spectral: false, vitesse: 360, portee: 320, degats: 5 },
+    projectile: { forme: "carre", couleur: "#6d28d9", rayon: 6, direction: "bas", spectral: false, vitesse: 360, portee: 320 },
   },
   {
     id: "ecrasement",
     type: "normal",
     effet: "ecrasement",
+    attaque: 10,
     duree: 3,
-    degats: 10,
   },
   {
     id: "charge",
     type: "normal",
     effet: "charge",
+    attaque: 10,
     duree: 3,
-    degats: 10,
     distanceDash: 64,
     vitesseDash: 480,
   },
