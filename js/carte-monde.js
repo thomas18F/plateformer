@@ -260,7 +260,7 @@ function dessinerCarte() {
   // D'abord tous les bords (plus larges), puis l'intérieur par-dessus.
   for (const [largeur, ouvert, ferme] of [[10, coul.cheminBord, coul.cheminFermeBord], [6, coul.chemin, coul.cheminFerme]]) {
     for (const m of MORCEAUX_CHEMIN) {
-      ctx.fillStyle = m.etape >= 0 && m.etape <= numeroNiveau ? ouvert : ferme;
+      ctx.fillStyle = m.etape >= 0 && m.etape <= niveauMaxAtteint ? ouvert : ferme;
       const a = centreCase(m);
       const b = centreCase({ c: m.c2, r: m.r2 });
       ctx.fillRect(a.x - largeur / 2, a.y - largeur / 2, b.x - a.x + largeur, b.y - a.y + largeur);
@@ -274,7 +274,7 @@ function dessinerCarte() {
   ctx.font = "bold 10px system-ui, sans-serif";
   ETAPES.forEach((etape, n) => {
     if (etape.ville) return;
-    const ouverte = n <= numeroNiveau;
+    const ouverte = n <= niveauMaxAtteint;
     ctx.fillStyle = ouverte ? coul.pastilleBord : coul.pastilleFermeeBord;
     ellipse(etape.x, etape.y, 8, 8);
     ctx.fillStyle = ouverte ? coul.pastille : coul.pastilleFermee;
@@ -288,7 +288,7 @@ function dessinerCarte() {
   pourChaqueCase((ch, x, y) => {
     if (!estVille(ch)) return;
     const n = VILLES[rangDeLaVille(ch)].etape; // pas d'étape : une lettre manque avant elle, elle n'est pas visitée
-    const ouverte = n !== undefined && n <= numeroNiveau;
+    const ouverte = n !== undefined && n <= niveauMaxAtteint;
     ctx.fillStyle = ouverte ? coul.villeBord : coul.villeFermeeBord;
     ctx.fillRect(x - 3, y - 3, CASE_CARTE + 6, CASE_CARTE + 6);
     ctx.fillStyle = ouverte ? coul.ville : coul.villeFermee;

@@ -31,8 +31,12 @@ function approcher(valeur, cible, pas) {
   return valeur < cible ? Math.min(valeur + pas, cible) : Math.max(valeur - pas, cible);
 }
 
-function majJoueur(dt) {
+// obeitAuxTouches = false pendant la transition entre deux niveaux (transition.js) :
+// le Pokémon continue de tomber et de glisser, mais on fait comme si aucune touche n'était appuyée.
+function majJoueur(dt, obeitAuxTouches = true) {
   const j = joueur;
+  const tenues = obeitAuxTouches ? touches : {};  // les touches enfoncées
+  const pressees = obeitAuxTouches ? appuye : {}; // les touches qui viennent d'être enfoncées
 
   if (j.mort) {
     appliquerGravite(j, dt);
@@ -43,7 +47,7 @@ function majJoueur(dt) {
   }
 
   // Déplacement horizontal, sauf pendant le petit dash de charge.
-  const sens = (touches.droite ? 1 : 0) - (touches.gauche ? 1 : 0);
+  const sens = (tenues.droite ? 1 : 0) - (tenues.gauche ? 1 : 0);
   if (j.distanceDashRestante > 0) {
     j.vx = j.directionDash * Math.min(
       CAPACITES.find((c) => c.id === "charge").vitesseDash,
@@ -61,7 +65,7 @@ function majJoueur(dt) {
   // Saut
   // - memoSaut : un appui un peu trop tôt avant d'atterrir compte quand même
   // - coyote : on peut encore sauter juste après avoir quitté le bord
-  if (appuye.saut) j.memoSaut = 0.12;
+  if (pressees.saut) j.memoSaut = 0.12;
   j.memoSaut -= dt;
   j.coyote -= dt;
   if (j.memoSaut > 0 && j.coyote > 0) {
@@ -75,7 +79,7 @@ function majJoueur(dt) {
   j.dureeEcrasement = Math.max(0, j.dureeEcrasement - dt);
   j.dureeCharge = Math.max(0, j.dureeCharge - dt);
   for (const attribution of CAPACITES_JOUEUR) {
-    if (appuye[attribution.action]) {
+    if (pressees[attribution.action]) {
       const capacite = CAPACITES.find((c) => c.id === attribution.capacite);
       if (!capacite) continue;
       if (capacite.effet === "ecrasement") j.dureeEcrasement = capacite.duree;
@@ -90,7 +94,7 @@ function majJoueur(dt) {
   }
 
   // Gravité : plus forte si on relâche le saut, pour faire des petits sauts
-  appliquerGravite(j, dt, j.vy < 0 && !touches.saut ? 2.5 : 1);
+  appliquerGravite(j, dt, j.vy < 0 && !tenues.saut ? 2.5 : 1);
 
   // Collisions avec le décor
   const basAvant = j.y + j.h;
@@ -144,7 +148,7 @@ function majJoueur(dt) {
     if (tombeSurLeDessus && j.dureeEcrasement > 0) {
       const capaciteEcrasement = CAPACITES.find((c) => c.id === "ecrasement");
       subirCapacite(e, capaciteEcrasement, capaciteEcrasement.degats);
-      j.vy = touches.saut ? -FORCE_SAUT : -FORCE_SAUT * 0.6;
+      j.vy = tenues.saut ? -FORCE_SAUT : -FORCE_SAUT * 0.6;
     } else if (j.dureeCharge > 0 && !tombeSurLeDessus) {
       if (!j.ennemisTouchésParCharge.has(e)) {
         const capaciteCharge = CAPACITES.find((c) => c.id === "charge");
@@ -156,6 +160,8 @@ function majJoueur(dt) {
 
   // Arrivée : les CASES_ARRIVEE dernières colonnes de la carte
   if (j.x + j.l > largeurNiveau - CASES_ARRIVEE * TILE) finirNiveau();
+  // Retour en arrière : les CASES_ARRIVEE premières colonnes ramènent au niveau précédent (le niveau 1 n'en a pas)
+  else if (j.x < CASES_ARRIVEE * TILE && numeroNiveau > 0) revenirAuNiveauPrecedent();
 }
 
 function blocLePlusProche(liste, j) {
@@ -191,6 +197,7 @@ function touchePics(j) {
 // tombeDansLeVide choisit l'animation de mort (chute dans un trou ou petit saut).
 // couleur : celle du « -N » (par exemple la couleur du statut, pour les dégâts de brûlure ou de poison).
 function blesserJoueur(degats, tombeDansLeVide = false, couleur = COULEUR_DEGATS_JOUEUR) {
+  if (etat === "transition") return; // pendant la transition entre deux niveaux, le Pokémon est invulnérable
   afficherDegats(joueur, degats, couleur);
   joueur.pv -= degats;
   if (joueur.pv <= 0) mourir(tombeDansLeVide);
@@ -222,6 +229,14 @@ function finDeVie() {
 }
 
 function finirNiveau() {
-  etat = "victoire";
+  if (etat !== "jeu") return; // la transition est déjà lancée : le Pokémon est encore au bout du niveau
   sons.victoire();
+  if (estDernierNiveau()) etat = "victoire"; // plus de niveau après : on garde l'écran de fin
+  else demarrerTransition(1);                // sinon, la transition emmène au niveau suivant
+}
+
+function revenirAuNiveauPrecedent() {
+  if (etat !== "jeu") return; // la transition est déjà lancée : le Pokémon est encore au bord gauche
+  sons.victoire(); // le même son que pour passer au niveau suivant
+  demarrerTransition(-1);
 }

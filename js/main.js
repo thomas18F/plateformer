@@ -2,6 +2,18 @@
 //  La boucle principale : mise à jour, dessin, démarrage
 // =====================================================
 
+// ---------- Mise à jour de tout ce qui bouge dans le niveau ----------
+// obeitAuxTouches = false pendant une transition : le Pokémon ne fait plus rien de lui-même
+function majNiveau(dt, obeitAuxTouches) {
+  majJoueur(dt, obeitAuxTouches);
+  if (!joueur.mort) {
+    majEnnemis(dt);
+    majTirs(dt);
+    majCamera(dt);
+  }
+  majEffets(dt);
+}
+
 // ---------- Mise à jour générale ----------
 function mettreAJour(dt) {
   temps += dt;
@@ -16,23 +28,19 @@ function mettreAJour(dt) {
       if (appuye.pause) { etat = "pause"; break; }
       if (appuye.carte) { etat = "carte"; break; } // le niveau attend, comme en pause : on le reprend là où on en était
       if (!joueur.mort) chrono += dt;
-      majJoueur(dt);
-      if (!joueur.mort) {
-        majEnnemis(dt);
-        majTirs(dt);
-        majCamera(dt);
-      }
-      majEffets(dt);
+      majNiveau(dt, true);
+      break;
+    case "transition":
+      // Pas de carte ni de pause ici, et le Pokémon n'obéit plus aux touches (voir transition.js)
+      majNiveau(dt, false);
+      majTransition(dt);
       break;
     case "pause":
       if (appuye.pause || appuye.entree) etat = "jeu";
       break;
     case "victoire":
       majEffets(dt);
-      if (appuye.entree) {
-        if (estDernierNiveau()) nouvellePartie();
-        else niveauSuivant();
-      }
+      if (appuye.entree) nouvellePartie(); // on n'arrive ici qu'après le dernier niveau
       break;
     case "gameover":
       majEffets(dt);
@@ -70,6 +78,7 @@ function dessiner() {
 
   if (etat !== "titre") dessinerHUD();
   dessinerEcran();
+  if (etat === "transition") dessinerTransition(); // en dernier : le noir cache aussi le bandeau
 }
 
 // ---------- Boucle de jeu (physique à 60 pas par seconde, quel que soit l'écran) ----------

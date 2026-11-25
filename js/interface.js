@@ -14,7 +14,7 @@ function dessinerHUD() {
 }
 
 function dessinerEcran() {
-  if (etat === "jeu") return;
+  if (etat === "jeu" || etat === "transition") return;
 
   ctx.fillStyle = "rgba(15, 20, 35, 0.6)";
   ctx.fillRect(0, 0, W, H);
@@ -48,13 +48,13 @@ function dessinerEcran() {
     titre("Pause", "#fff");
     lignes(["P ou Entrée pour reprendre"], 250);
   } else if (etat === "victoire") {
-    const fini = estDernierNiveau();
-    titre(fini ? "Bravo, tu as fini le jeu !" : `Niveau ${numeroNiveau + 1} terminé !`, "#7dff9a");
+    // Seulement après le dernier niveau : entre deux niveaux, c'est la transition (transition.js)
+    titre("Bravo, tu as fini le jeu !", "#7dff9a");
     lignes([
       `Pièces : ${nbPieces}`,
       `Temps : ${Math.floor(chrono)} s`,
     ], 240);
-    invite(fini ? "Entrée pour rejouer" : "Entrée pour le niveau suivant");
+    invite("Entrée pour rejouer");
   } else if (etat === "gameover") {
     titre("Partie terminée", "#ff7d7d");
     invite("Entrée pour recommencer");

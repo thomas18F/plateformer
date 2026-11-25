@@ -13,7 +13,8 @@ const CHUTE_MAX = 900;
 const DEGATS_PICS = 10;       // PV perdus en touchant des pics
 const DELAI_PICS = 1;         // secondes pendant lesquelles les pics ne blessent plus, après une piqûre
 const PIECES_BLOC = 3;        // pièces gagnées en frappant un bloc doré
-const CASES_ARRIVEE = 1;      // le niveau est gagné quand le Pokémon entre dans les N dernières colonnes de la carte
+const CASES_ARRIVEE = 1;      // le niveau est gagné quand le Pokémon entre dans les N dernières colonnes de la carte ; les N premières ramènent au niveau précédent
+const DUREE_TRANSITION = 0.8; // secondes que met le cercle à se refermer sur le Pokémon entre deux niveaux (puis autant pour se rouvrir)
 const TAILLE_CENTRE_POKEMON = { l: 160, h: 112 }; // hitbox d'un centre Pokémon (px) : le passer soigne, mais il ne bloque rien
 
 // Le Pokédex : tous les Pokémon du jeu.
