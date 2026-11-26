@@ -31,6 +31,8 @@
 //                  Il va bien avec la capacité "balle-ombre".
 //   "arcko"      : petit gecko vert, tient dans sa case (comme le joueur). Rapide : il marche plus vite que les autres.
 //                  Il va bien avec la capacité "balle-graine".
+//   "tiplouf"    : petit pingouin bleu, tient dans sa case (comme le joueur). Lent, mais il encaisse mieux les coups.
+//                  Il va bien avec la capacité "pistolet-a-o".
 // « capacite » choisit son tir (voir CAPACITES dans reglages.js).
 //
 // « fond » choisit le paysage qui défile derrière (voir dessinerFond dans dessin-decor.js) :

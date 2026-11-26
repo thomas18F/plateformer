@@ -177,6 +177,7 @@ const DESSINS_POKEMON = {
   salameche: dessinerSalameche,
   fantominus: dessinerFantominus,
   arcko: dessinerArcko,
+  tiplouf: dessinerTiplouf,
 };
 
 function dessinerEnnemi(e) {
@@ -622,6 +623,128 @@ function dessinerPatteArcko(x, y, couleur, contour) {
   ajouterEllipse(x + 4.2, y - 1.2, 1.2, 1.2);
   ajouterEllipse(x + 3.4, y - 0.4, 1.1, 1.1);
   remplirAvecContour(couleur, contour, 1.6);
+}
+
+// Le Tiplouf : petit pingouin au corps bleu clair, avec deux taches blanches sur la poitrine.
+// Sa grosse tête bleu foncé a le visage blanc, un motif bleu pâle en couronne au-dessus du petit bec jaune ;
+// les plumes de la tête descendent le long du dos jusqu'à la queue, comme une cape.
+// Des nageoires à la place des bras et des pieds jaunes à trois orteils (hitbox 22 × 26).
+// Il marche en se dandinant, et bat des nageoires quand il saute.
+function dessinerTiplouf(pose) {
+  ctx.scale(pose.sens, 1); // regarde à gauche ou à droite
+  if (pose.ecrase) ctx.scale(1.3, 0.3); // écrasé tout plat
+
+  const enMarche = pose.enMarche;
+  const enLAir = pose.enLAir;
+  const pas = enMarche ? Math.sin(pose.anim * 9) : 0; // un pas toutes les 0,35 s de marche
+
+  const BLEU_FONCE = "#2f56a8";
+  const BLEU_CLAIR = "#7cc6ee";
+  const BLEU_PALE = "#86c9ef";
+  const CONTOUR = "#16285a";
+  const JAUNE = "#f7c843";
+  const JAUNE_OMBRE = "#d9a92c"; // pour le pied de derrière
+  const CONTOUR_JAUNE = "#8f6212";
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+
+  // Les pieds : il les lève l'un après l'autre, et les laisse pendre pendant un saut
+  let derriere = { x: -3.5, y: -Math.max(0, -pas) * 1.8 };
+  let devant = { x: 2.5, y: -Math.max(0, pas) * 1.8 };
+  if (enLAir) {
+    derriere = { x: -4.5, y: -1 };
+    devant = { x: 3, y: -2.5 };
+  }
+  dessinerPiedTiplouf(derriere.x, derriere.y, JAUNE_OMBRE, CONTOUR_JAUNE);
+
+  // Tout le reste se dandine : il penche d'un côté puis de l'autre, en pivotant sur ses pieds
+  ctx.save();
+  ctx.rotate(pas * 0.08);
+
+  // La petite queue pointue, au bout de la cape
+  ctx.beginPath();
+  ctx.moveTo(-5, -7);
+  ctx.lineTo(-11, -2.5);
+  ctx.lineTo(-4, -2.5);
+  ctx.closePath();
+  remplirAvecContour(BLEU_FONCE, CONTOUR);
+
+  // Le corps rond, avec la cape bleu foncé qui couvre le dos
+  ctx.beginPath();
+  ajouterEllipse(0, -8.5, 7.5, 8);
+  remplirAvecContour(BLEU_CLAIR, CONTOUR);
+  ctx.save();
+  ctx.clip(); // la cape ne déborde pas du corps
+  ctx.fillStyle = BLEU_FONCE;
+  ellipse(-10, -10, 4, 11);
+  ctx.restore();
+
+  // Les deux taches blanches de la poitrine
+  ctx.fillStyle = "#fff";
+  ellipse(3.6, -8.5, 1.3, 1.9, -0.2);
+  ellipse(5.9, -8, 1.1, 1.8, -0.2);
+  ctx.restore();
+
+  dessinerPiedTiplouf(devant.x, devant.y, JAUNE, CONTOUR_JAUNE);
+
+  ctx.save();
+  ctx.rotate(pas * 0.08);
+
+  // La grosse tête ronde bleu foncé
+  ctx.beginPath();
+  ajouterEllipse(1.5, -18.5, 8, 7.5);
+  remplirAvecContour(BLEU_FONCE, CONTOUR);
+
+  // Le visage blanc, et le motif bleu pâle en couronne au-dessus du bec
+  ctx.save();
+  ctx.clip();
+  ctx.fillStyle = "#fff";
+  ellipse(6, -18.5, 5, 5.3);
+  ctx.beginPath();
+  ctx.moveTo(6.8, -17.4);
+  ctx.lineTo(6.3, -21.5); // la pointe de gauche
+  ctx.lineTo(7.6, -20.2);
+  ctx.lineTo(8.3, -22.8); // celle du milieu, la plus haute
+  ctx.lineTo(9, -20.2);
+  ctx.lineTo(9.6, -21);   // celle de droite
+  ctx.lineTo(9.8, -17.4);
+  ctx.closePath();
+  ctx.fillStyle = BLEU_PALE;
+  ctx.fill();
+  ctx.restore();
+
+  // Grand œil noir avec un reflet blanc
+  ctx.fillStyle = "#111a2e";
+  ellipse(4.2, -19.6, 1.7, 2.3);
+  ctx.fillStyle = "#fff";
+  ellipse(3.7, -20.6, 0.6, 0.7);
+
+  // Le petit bec jaune
+  ctx.beginPath();
+  ajouterEllipse(9.8, -16.8, 2.5, 1.6);
+  remplirAvecContour(JAUNE, CONTOUR_JAUNE, 1.4);
+
+  // La nageoire : elle pend le long du corps, se balance quand il marche,
+  // et se lève en arrière pour battre vite pendant un saut
+  const angle = enLAir ? 1.5 + Math.sin(temps * 25) * 0.4 : 0.5 + pas * 0.25;
+  ctx.save();
+  ctx.translate(1, -12.5);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ajouterEllipse(0, 4.5, 2, 5);
+  remplirAvecContour(BLEU_CLAIR, CONTOUR, 1.6);
+  ctx.restore();
+  ctx.restore();
+}
+
+// Un pied de Tiplouf : jaune et plat, avec trois orteils ronds devant
+function dessinerPiedTiplouf(x, y, couleur, contour) {
+  ctx.beginPath();
+  ajouterEllipse(x + 1, y - 1.3, 3.6, 1.4);
+  ajouterEllipse(x + 4.2, y - 1.4, 1.1, 1.1);
+  ajouterEllipse(x + 4.5, y - 0.6, 1.1, 1);
+  ajouterEllipse(x + 3.4, y - 0.4, 1, 1);
+  remplirAvecContour(couleur, contour, 1.4);
 }
 
 // Un bras d'Arcko, de l'épaule à la main, avec trois petits doigts ronds au bout

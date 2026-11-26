@@ -36,10 +36,11 @@ const POKEDEX = [
   { id: "salameche", l: 22, h: 30, pv: 20, vitesse: 70, attaque: 10, defense: 5, types: ["feu"], valeur: 4 },                // petit lézard orange, flamme au bout de la queue
   { id: "fantominus", l: 28, h: 28, pv: 16, vitesse: 50, attaque: 5, defense: 5, types: ["spectre", "poison", "vol"], valeur: 2 }, // boule de gaz sombre dans un halo violet : elle flotte
   { id: "arcko", l: 22, h: 28, pv: 18, vitesse: 80, attaque: 10, defense: 5, types: ["plante"], valeur: 4 },                 // petit gecko vert, ventre rouge, grande queue en feuille
+  { id: "tiplouf", l: 22, h: 26, pv: 22, vitesse: 50, attaque: 10, defense: 7, types: ["eau"], valeur: 4 },                  // petit pingouin bleu, tête bleu foncé : lent mais solide
 ];
 
 // Le Pokémon que l'on joue : un id du POKEDEX. Sa taille, ses PV, ses types et son dessin viennent de sa fiche.
-const POKEMON_JOUEUR = "arcko";
+const POKEMON_JOUEUR = "tiplouf";
 
 // Les tirs (du Pokémon et des ennemis)
 // Capacités disponibles dans le jeu : description indépendante des utilisateurs.
@@ -68,6 +69,13 @@ const CAPACITES = [
     attaque: 5,
     statut: { nom: "brulure", chance: 0.1 },
     projectile: { forme: "cercle", couleur: "#e53935", rayon: 5, direction: "avant", spectral: false, vitesse: 480, portee: 320 },
+  },
+  {
+    id: "pistolet-a-o", // comme la flammèche, mais de type eau et sans brûlure
+    type: "eau",
+    effet: "projectile",
+    attaque: 5,
+    projectile: { forme: "cercle", couleur: "#1e88e5", rayon: 5, direction: "avant", spectral: false, vitesse: 480, portee: 320 },
   },
   {
     id: "dard-venin",
@@ -175,12 +183,13 @@ const EFFICACITES = {
 };
 
 // Contrôles du joueur et capacités attribuées au joueur, séparés des capacités elles-mêmes.
-const TOUCHES_JOUEUR = { gauche: "arrowleft", droite: "arrowright", saut: "arrowup", capacite1: "x", capacite2: "c", capacite3: "v", capacite4: "b", carte: "m", entree: "enter", pause: "p" };
+const TOUCHES_JOUEUR = { gauche: "arrowleft", droite: "arrowright", saut: "arrowup", capacite1: "x", capacite2: "c", capacite3: "v", capacite4: "b", capacite5: "n", carte: "m", entree: "enter", pause: "p" };
 const CAPACITES_JOUEUR = [
   { action: "capacite1", capacite: "flammeche" },
   { action: "capacite2", capacite: "ecrasement" },
   { action: "capacite3", capacite: "balle-ombre" },
   { action: "capacite4", capacite: "balle-graine" },
+  { action: "capacite5", capacite: "pistolet-a-o" },
 ];
 
 // Couleur du texte « -5 » qui s'affiche au-dessus d'un personnage qui perd des PV
