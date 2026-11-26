@@ -35,10 +35,11 @@ const POKEDEX = [
   { id: "simularbre", l: 44, h: 60, pv: 20, vitesse: 40, attaque: 5, defense: 5, types: ["roche"], valeur: 3 },             // faux arbre qui marche : presque 2 cases de haut
   { id: "salameche", l: 22, h: 30, pv: 20, vitesse: 70, attaque: 10, defense: 5, types: ["feu"], valeur: 4 },                // petit lézard orange, flamme au bout de la queue
   { id: "fantominus", l: 28, h: 28, pv: 16, vitesse: 50, attaque: 5, defense: 5, types: ["spectre", "poison", "vol"], valeur: 2 }, // boule de gaz sombre dans un halo violet : elle flotte
+  { id: "arcko", l: 22, h: 28, pv: 18, vitesse: 80, attaque: 10, defense: 5, types: ["plante"], valeur: 4 },                 // petit gecko vert, ventre rouge, grande queue en feuille
 ];
 
 // Le Pokémon que l'on joue : un id du POKEDEX. Sa taille, ses PV, ses types et son dessin viennent de sa fiche.
-const POKEMON_JOUEUR = "salameche";
+const POKEMON_JOUEUR = "arcko";
 
 // Les tirs (du Pokémon et des ennemis)
 // Capacités disponibles dans le jeu : description indépendante des utilisateurs.
@@ -50,6 +51,9 @@ const POKEMON_JOUEUR = "salameche";
 //   retireType (facultatif) : la cible perd ce type si elle l'a, une fois les dégâts calculés (ils comptent donc encore ce type)
 //   ralentissement (facultatif) : { facteur, duree } : la cible marche à « facteur » fois sa vitesse (0.7 = 70 %)
 //               pendant « duree » secondes, à chaque fois qu'elle est touchée (voir ralentir dans statuts.js)
+//   rafale (facultatif) : { min, max, intervalle } : un lancement tire entre « min » et « max » projectiles (au hasard),
+//               le premier tout de suite, puis un toutes les « intervalle » secondes (voir activerCapacite dans tirs.js).
+//               Chaque projectile fait ses dégâts à part : garde une petite « attaque ».
 // Pour un projectile :
 //   forme     : « cercle », « triangle » (la pointe dans le sens du tir), « carre » (de côté 2 × rayon)
 //               ou « rectangle » (« longueur » dans le sens du tir, « epaisseur » en travers, au lieu de « rayon »)
@@ -103,6 +107,14 @@ const CAPACITES = [
     sansDegats: true,
     ralentissement: { facteur: 0.7, duree: 20 },
     projectile: { forme: "rectangle", couleur: "#ffffff", longueur: 16, epaisseur: 6, direction: "avant", spectral: false, vitesse: 360, portee: 320 },
+  },
+  {
+    id: "balle-graine",
+    type: "plante",
+    effet: "projectile",
+    attaque: 2, // moins que les autres projectiles : chaque graine fait peu de dégâts, mais il y en a plusieurs
+    rafale: { min: 2, max: 5, intervalle: 0.12 },
+    projectile: { forme: "cercle", couleur: "#8a5a2b", rayon: 4, direction: "avant", spectral: false, vitesse: 520, portee: 320 },
   },
   {
     id: "ecrasement",
@@ -163,11 +175,12 @@ const EFFICACITES = {
 };
 
 // Contrôles du joueur et capacités attribuées au joueur, séparés des capacités elles-mêmes.
-const TOUCHES_JOUEUR = { gauche: "arrowleft", droite: "arrowright", saut: "arrowup", capacite1: "x", capacite2: "c", capacite3: "v", carte: "m", entree: "enter", pause: "p" };
+const TOUCHES_JOUEUR = { gauche: "arrowleft", droite: "arrowright", saut: "arrowup", capacite1: "x", capacite2: "c", capacite3: "v", capacite4: "b", carte: "m", entree: "enter", pause: "p" };
 const CAPACITES_JOUEUR = [
   { action: "capacite1", capacite: "flammeche" },
   { action: "capacite2", capacite: "ecrasement" },
   { action: "capacite3", capacite: "balle-ombre" },
+  { action: "capacite4", capacite: "balle-graine" },
 ];
 
 // Couleur du texte « -5 » qui s'affiche au-dessus d'un personnage qui perd des PV

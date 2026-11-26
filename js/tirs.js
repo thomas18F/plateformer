@@ -37,12 +37,43 @@ function creerTir(tireur, sens, camp, capacite) {
   });
 }
 
-// Le Pokémon tire dans la direction où il regarde (ou vers le haut pour anti-air, vers le bas pour bombe beurk)
+// Le Pokémon lance une capacité à projectile : un seul tir, ou toute une rafale si la capacité en a une
+// (« rafale » dans CAPACITES, comme balle graine). Le premier projectile part tout de suite,
+// les suivants sont tirés par majRafales, un toutes les « intervalle » secondes.
 function activerCapacite(utilisateur, capacite, camp) {
+  tirer(utilisateur, capacite, camp);
+  const rafale = capacite.rafale;
+  if (rafale) {
+    const nombre = rafale.min + Math.floor(Math.random() * (rafale.max - rafale.min + 1)); // entre min et max compris
+    rafales.push({ tireur: utilisateur, capacite, camp, restants: nombre - 1, avantTir: rafale.intervalle });
+  }
+}
+
+// Un projectile, tiré dans la direction où le Pokémon regarde à cet instant
+// (ou vers le haut pour anti-air, vers le bas pour bombe beurk)
+function tirer(utilisateur, capacite, camp) {
   const sens = camp === "joueur" ? utilisateur.dir : sensEnnemi(utilisateur);
   creerTir(utilisateur, sens, camp, capacite);
   if (camp === "joueur") sons.tir();
   else sons.tirEnnemi();
+}
+
+// Les rafales en cours tirent leurs projectiles suivants, chacun depuis là où est le tireur à ce moment-là.
+// Une rafale s'arrête quand elle a tout tiré, ou si son tireur est K.O.
+function majRafales(dt) {
+  for (const r of rafales) {
+    if (r.tireur.mort) {
+      r.restants = 0;
+      continue;
+    }
+    r.avantTir -= dt;
+    while (r.avantTir <= 0 && r.restants > 0) {
+      tirer(r.tireur, r.capacite, r.camp);
+      r.restants--;
+      r.avantTir += r.capacite.rafale.intervalle;
+    }
+  }
+  rafales = rafales.filter((r) => r.restants > 0);
 }
 
 // Fait avancer les tirs en ligne droite, et les retire :

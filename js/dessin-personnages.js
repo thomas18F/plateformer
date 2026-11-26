@@ -176,6 +176,7 @@ const DESSINS_POKEMON = {
   simularbre: dessinerSimularbre,
   salameche: dessinerSalameche,
   fantominus: dessinerFantominus,
+  arcko: dessinerArcko,
 };
 
 function dessinerEnnemi(e) {
@@ -478,6 +479,167 @@ function dessinerFantominus(pose) {
   ctx.fillStyle = "#fff";
   triangle(-3, cy + 4.4, -0.8, cy + 4.6, -1.9, cy + 6.8);
   triangle(2.8, cy + 4.3, 5, cy + 4, 4, cy + 6.3);
+}
+
+// L'Arcko : petit gecko vert clair qui se tient debout, la gorge et le ventre rouges,
+// une grande tête large avec de gros yeux jaunes aux pupilles fendues et deux petites pointes sur le crâne,
+// trois doigts ronds à chaque patte, et une grande queue vert foncé à deux lobes, comme une feuille (hitbox 22 × 28)
+function dessinerArcko(pose) {
+  ctx.scale(pose.sens, 1); // regarde à gauche ou à droite
+  if (pose.ecrase) ctx.scale(1.3, 0.3); // écrasé tout plat
+
+  const enMarche = pose.enMarche;
+  const enLAir = pose.enLAir;
+  const pas = enMarche ? Math.sin(pose.anim * 12) : 0; // il trottine un peu plus vite que le Salamèche
+  const rebond = Math.abs(pas) * 1.2; // le haut du corps se soulève à chaque pas
+
+  const PEAU = "#8fd16a";
+  const PEAU_OMBRE = "#72b552"; // pour la patte et le bras de derrière
+  const QUEUE = "#3f8f43";
+  const QUEUE_CLAIR = "#5dab56";
+  const CONTOUR = "#1f4a26";
+  const ROUGE = "#e2524b";
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+
+  // La grande queue : elle part du bas du dos et se dresse derrière lui en deux lobes.
+  // Elle se balance à chaque pas, et part en arrière pendant un saut.
+  ctx.save();
+  ctx.translate(-3, -5);
+  ctx.rotate(pas * 0.08 - (enLAir ? 0.25 : 0));
+  ctx.beginPath();
+  ctx.moveTo(1, 1);
+  ctx.quadraticCurveTo(-6, 2, -10, -0.5);      // le dessous
+  ctx.quadraticCurveTo(-14.5, -2, -12.5, -6);  // le bout arrondi du petit lobe
+  ctx.quadraticCurveTo(-11, -7.5, -9, -8);     // le creux entre les deux lobes
+  ctx.quadraticCurveTo(-13.5, -12, -11, -18);  // le dos du grand lobe
+  ctx.quadraticCurveTo(-8, -21.5, -5, -17);    // son bout arrondi, en haut
+  ctx.quadraticCurveTo(-2, -11, 2, -6);        // le bord de devant, qui revient contre le dos
+  ctx.closePath();
+  remplirAvecContour(QUEUE, CONTOUR);
+  // une nervure plus claire dans chaque lobe
+  ctx.strokeStyle = QUEUE_CLAIR;
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(-1, -3);
+  ctx.quadraticCurveTo(-6, -9, -8, -16);
+  ctx.moveTo(-2, -1);
+  ctx.quadraticCurveTo(-7, -1.5, -11, -3.5);
+  ctx.stroke();
+  ctx.restore();
+
+  // Position des deux pattes (x du milieu de la patte, y sous le pied)
+  let derriere = { x: -3.5 - pas * 3, y: -Math.max(0, -pas) * 1.5 };
+  let devant = { x: 2.5 + pas * 3, y: -Math.max(0, pas) * 1.5 };
+  if (enLAir) {
+    derriere = { x: -5.5, y: -1 }; // pattes écartées pendant le saut
+    devant = { x: 4.5, y: -3 };
+  }
+  dessinerPatteArcko(derriere.x, derriere.y, PEAU_OMBRE, CONTOUR);
+
+  ctx.save();
+  ctx.translate(0, -rebond);
+
+  // Le bras de derrière, à peine visible
+  dessinerBrasArcko(-1, -12.5, enLAir ? { x: -4, y: -17 } : { x: -3.5 - pas * 1.2, y: -8.5 }, PEAU_OMBRE, CONTOUR);
+
+  // Le corps, avec le ventre rouge barré d'une ligne noire
+  ctx.beginPath();
+  ajouterEllipse(-0.5, -9.5, 6.5, 7.5);
+  remplirAvecContour(PEAU, CONTOUR);
+  ctx.save();
+  ctx.clip(); // le ventre ne déborde pas du corps
+  ctx.fillStyle = ROUGE;
+  ellipse(4, -9, 4.5, 7.5, -0.15);
+  ctx.strokeStyle = "#2a1a1a";
+  ctx.lineWidth = 0.9;
+  ctx.beginPath();
+  ctx.moveTo(1, -6.5);
+  ctx.lineTo(8, -7.5);
+  ctx.stroke();
+  ctx.restore();
+  ctx.restore();
+
+  dessinerPatteArcko(devant.x, devant.y, PEAU, CONTOUR);
+
+  ctx.save();
+  ctx.translate(0, -rebond);
+
+  // Deux petites pointes sur l'arrière du crâne (dessinées avant la tête, qui cache leur base)
+  ctx.beginPath();
+  ctx.moveTo(-5, -23);
+  ctx.lineTo(-9, -25);
+  ctx.lineTo(-3, -25.5);
+  ctx.moveTo(-2, -25.8);
+  ctx.lineTo(-5.5, -28);
+  ctx.lineTo(1.5, -26.8);
+  remplirAvecContour(PEAU, CONTOUR);
+
+  // Grande tête large, au museau rond
+  ctx.beginPath();
+  ajouterEllipse(2, -20, 8.5, 6.8);
+  ajouterEllipse(7.5, -18.5, 5, 4.6);
+  remplirAvecContour(PEAU, CONTOUR);
+
+  // La gorge rouge, sous la bouche
+  ctx.save();
+  ctx.clip();
+  ctx.fillStyle = ROUGE;
+  ellipse(6.5, -13, 7, 3.4);
+  ctx.restore();
+
+  // La bouche : un long trait qui va du bout du museau jusque sous l'œil
+  ctx.strokeStyle = CONTOUR;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(12.2, -16.2);
+  ctx.quadraticCurveTo(9, -15.2, 4.5, -16.2);
+  ctx.stroke();
+
+  // Narine
+  ctx.fillStyle = CONTOUR;
+  ellipse(11.4, -19.4, 0.5, 0.5);
+
+  // Gros œil jaune, avec une pupille noire fendue et un reflet blanc
+  ctx.beginPath();
+  ajouterEllipse(5, -21.5, 2.9, 3.4);
+  remplirAvecContour("#f6d63c", CONTOUR, 1.2);
+  ctx.fillStyle = "#151515";
+  ellipse(5.7, -21.4, 0.85, 2.5);
+  ctx.fillStyle = "#fff";
+  ellipse(4.3, -23, 0.7, 0.8);
+
+  // Le bras de devant, avec ses trois doigts : tendu en avant pendant un saut
+  dessinerBrasArcko(2, -12.5, enLAir ? { x: 8.5, y: -13 } : { x: 6.5 + pas * 1.2, y: -8.5 }, PEAU, CONTOUR);
+  ctx.restore();
+}
+
+// Une patte d'Arcko : une cuisse ronde et un pied qui finit par des doigts ronds
+function dessinerPatteArcko(x, y, couleur, contour) {
+  ctx.beginPath();
+  ajouterEllipse(x, y - 4, 3, 3.4);
+  ajouterEllipse(x + 1, y - 1.5, 3.4, 1.5);
+  ajouterEllipse(x + 4.2, y - 1.2, 1.2, 1.2);
+  ajouterEllipse(x + 3.4, y - 0.4, 1.1, 1.1);
+  remplirAvecContour(couleur, contour, 1.6);
+}
+
+// Un bras d'Arcko, de l'épaule à la main, avec trois petits doigts ronds au bout
+function dessinerBrasArcko(x, y, main, couleur, contour) {
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(main.x, main.y);
+  ctx.lineWidth = 3.6;
+  ctx.strokeStyle = contour;
+  ctx.stroke();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = couleur;
+  ctx.stroke();
+  ctx.beginPath();
+  ajouterEllipse(main.x + 0.9, main.y - 0.9, 0.9, 0.9);
+  ajouterEllipse(main.x + 1.3, main.y + 0.3, 0.9, 0.9);
+  ajouterEllipse(main.x + 0.4, main.y + 1.2, 0.9, 0.9);
+  remplirAvecContour(couleur, contour, 1);
 }
 
 function dessinerEffets() {

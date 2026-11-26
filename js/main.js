@@ -8,6 +8,7 @@ function majNiveau(dt, obeitAuxTouches) {
   majJoueur(dt, obeitAuxTouches);
   if (!joueur.mort) {
     majEnnemis(dt);
+    majRafales(dt); // les projectiles suivants d'une rafale (balle graine…)
     majTirs(dt);
     majCamera(dt);
   }

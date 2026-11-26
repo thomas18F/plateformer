@@ -13,7 +13,7 @@ let nbPieces = 0;
 let chrono = 0;       // temps passé dans le niveau
 let temps = 0;        // horloge générale pour les animations
 
-let grille, pieces, ennemis, decorations, centresPokemon, effets, rebonds, tirs, joueur, depart;
+let grille, pieces, ennemis, decorations, centresPokemon, effets, rebonds, tirs, rafales, joueur, depart;
 let largeurNiveau, hauteurNiveau;
 const camera = { x: 0 };
 
@@ -33,6 +33,7 @@ function chargerNiveau(entree = "gauche") {
   effets = [];
   rebonds = {};
   tirs = [];
+  rafales = [];
 
   for (let r = 0; r < carte.length; r++) {
     const ligne = carte[r].padEnd(colonnes, " ");

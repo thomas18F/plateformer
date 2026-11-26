@@ -29,6 +29,8 @@
 //                  passe au-dessus des trous et ne fait demi-tour que contre un mur.
 //                  Touché par anti-air, il perd son type vol et tombe : il marche alors comme les autres.
 //                  Il va bien avec la capacité "balle-ombre".
+//   "arcko"      : petit gecko vert, tient dans sa case (comme le joueur). Rapide : il marche plus vite que les autres.
+//                  Il va bien avec la capacité "balle-graine".
 // « capacite » choisit son tir (voir CAPACITES dans reglages.js).
 //
 // « fond » choisit le paysage qui défile derrière (voir dessinerFond dans dessin-decor.js) :
@@ -106,7 +108,7 @@ const NIVEAUX = [
     ],
     ennemis: [
       { colonne: 18, ligne: 14, nom: "salameche", capacite: "flammeche" },
-      { colonne: 24, ligne: 11, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 24, ligne: 11, nom: "aspicot", capacite: "secretion" },
       { colonne: 31, ligne: 9, nom: "fantominus", capacite: "balle-ombre" },
       { colonne: 49, ligne: 10, nom: "aspicot", capacite: "dard-venin" },
       { colonne: 55, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
