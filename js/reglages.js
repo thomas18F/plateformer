@@ -50,6 +50,8 @@ const POKEMON_JOUEUR = "tiplouf";
 //   sansDegats (facultatif) : true = la capacité ne fait jamais perdre de PV (elle n'a alors pas besoin d'« attaque »)
 //   statut (facultatif) : { nom, chance } : la cible a « chance » d'attraper ce statut (0.1 = 10 %), voir STATUTS plus bas
 //   retireType (facultatif) : la cible perd ce type si elle l'a, une fois les dégâts calculés (ils comptent donc encore ce type)
+//   contrecoup (facultatif) : celui qui utilise la capacité perd cette part des PV que la cible a vraiment perdus
+//               (0.2 = 20 %, au moins 1 PV), seulement quand il la touche (voir subirContrecoup dans statuts.js)
 //   ralentissement (facultatif) : { facteur, duree } : la cible marche à « facteur » fois sa vitesse (0.7 = 70 %)
 //               pendant « duree » secondes, à chaque fois qu'elle est touchée (voir ralentir dans statuts.js)
 //   rafale (facultatif) : { min, max, intervalle } : un lancement tire entre « min » et « max » projectiles (au hasard),
@@ -149,6 +151,16 @@ const CAPACITES = [
     distanceDash: 160,
     vitesseDash: 480,
   },
+  {
+    id: "damocles", // comme la charge, mais plus forte : plus de dégâts, un dash plus long et plus rapide
+    type: "normal",
+    effet: "charge",
+    attaque: 20,
+    contrecoup: 0.2, // celui qui l'utilise perd 20 % des PV qu'il fait perdre
+    preparation: 0.4,
+    distanceDash: 256,
+    vitesseDash: 640,
+  },
 ];
 
 // Les statuts qu'une capacité peut infliger (champ « statut » d'une capacité, dans CAPACITES).
@@ -196,7 +208,7 @@ const TOUCHES_JOUEUR = { gauche: "arrowleft", droite: "arrowright", saut: "arrow
 const CAPACITES_JOUEUR = [
   { action: "capacite1", capacite: "flammeche" },
   { action: "capacite2", capacite: "ecrasement" },
-  { action: "capacite3", capacite: "charge" },
+  { action: "capacite3", capacite: "damocles" },
   { action: "capacite4", capacite: "balle-graine" },
   { action: "capacite5", capacite: "pistolet-a-o" },
 ];

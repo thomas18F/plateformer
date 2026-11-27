@@ -106,7 +106,7 @@ const NIVEAUX = [
       "########################################   ###########################    ###########################   ######################",
     ],
     ennemis: [
-      { colonne: 18, ligne: 14, nom: "salameche", capacite: "charge" },
+      { colonne: 18, ligne: 14, nom: "salameche", capacite: "damocles" },
       { colonne: 24, ligne: 11, nom: "aspicot", capacite: "secretion" },
       { colonne: 31, ligne: 9, nom: "fantominus", capacite: "bombe-beurk" },
       { colonne: 49, ligne: 10, nom: "aspicot", capacite: "dard-venin" },

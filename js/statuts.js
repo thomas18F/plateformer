@@ -5,13 +5,24 @@
 
 // La cible (le Pokémon ou un ennemi) est touchée par une capacité de l'attaquant :
 // elle perd des PV (calculerDegats, sauf pour une capacité « sansDegats »),
+// l'attaquant peut en subir le contrecoup (damoclès),
 // puis la capacité peut lui retirer un type, lui donner un statut et la ralentir.
 // attaquant : celui qui a utilisé la capacité (pour un tir, celui qui a tiré).
 function subirCapacite(cible, capacite, attaquant) {
+  const pvAvant = Math.max(0, cible.pv);
   if (!capacite.sansDegats) blesser(cible, calculerDegats(attaquant, capacite, cible));
+  subirContrecoup(attaquant, capacite, pvAvant - Math.max(0, cible.pv));
   retirerType(cible, capacite);
   tenterStatut(cible, capacite);
   ralentir(cible, capacite);
+}
+
+// Certaines capacités blessent aussi celui qui les utilise (« contrecoup » dans CAPACITES) : damoclès.
+// Il perd cette part des PV que la cible a vraiment perdus (pas plus que ce qui lui restait),
+// arrondie, et au moins 1 PV. Rien si la cible n'a rien perdu (une cible immunisée, par exemple).
+function subirContrecoup(attaquant, capacite, pvPerdusParLaCible) {
+  if (!capacite.contrecoup || pvPerdusParLaCible <= 0) return;
+  blesser(attaquant, Math.max(1, Math.round(pvPerdusParLaCible * capacite.contrecoup)));
 }
 
 // Les dégâts d'une capacité :
