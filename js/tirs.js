@@ -17,10 +17,21 @@ function departDuTir(tireur, sens, direction) {
   return { x: sens > 0 ? tireur.x + tireur.l : tireur.x, y: tireur.y + tireur.h / 2, dx: sens, dy: 0 };
 }
 
-// Crée un tir pour le tireur (Pokémon ou ennemi)
+// Le sens dans lequel le tireur tire : celui où regarde le Pokémon, ou celui où marche l'ennemi
+function sensDuTireur(tireur, camp) {
+  return camp === "joueur" ? tireur.dir : sensEnnemi(tireur);
+}
+
+// Crée un tir pour le tireur (Pokémon ou ennemi) et l'ajoute au jeu
 function creerTir(tireur, sens, camp, capacite) {
+  tirs.push(nouveauTir(tireur, sens, camp, capacite));
+}
+
+// Un tir tout neuf, pas encore ajouté au jeu :
+// creerTir l'ajoute, tirPeutToucher le fait avancer « pour de faux » pour savoir s'il toucherait.
+function nouveauTir(tireur, sens, camp, capacite) {
   const projectile = capacite.projectile;
-  tirs.push({
+  return {
     ...departDuTir(tireur, sens, projectile.direction), // x, y, dx, dy
     camp,         // "joueur" ou "ennemi"
     forme: projectile.forme,
@@ -34,13 +45,36 @@ function creerTir(tireur, sens, camp, capacite) {
     tireur,       // celui qui a tiré : son attaque compte dans les dégâts
     capacite,     // la capacité qui a tiré : son attaque, son type (pour l'efficacité) et son statut (brûlure…)
     parcouru: 0,  // distance déjà parcourue (px)
-  });
+  };
 }
 
-// Le Pokémon lance une capacité à projectile : un seul tir, ou toute une rafale si la capacité en a une
-// (« rafale » dans CAPACITES, comme balle graine). Le premier projectile part tout de suite,
-// les suivants sont tirés par majRafales, un toutes les « intervalle » secondes.
+// Le tir que le tireur lancerait maintenant avec cette capacité toucherait-il la cible, si elle restait immobile ?
+// On crée un tir « fantôme » (il n'est pas ajouté au jeu) et on le fait avancer pas à pas jusqu'à sa portée,
+// avec les mêmes règles que les vrais tirs dans majTirs : il s'arrête sur un bloc (sauf s'il est spectral),
+// et il touche dès qu'il chevauche la cible.
+// Tout vient de la fiche de la capacité (direction, taille, portée, spectral…) :
+// un nouveau projectile n'a rien de plus à régler pour que les ennemis sachent quand le lancer.
+const PAS_FANTOME = 4; // px : plus petit que les blocs, les Pokémon et les projectiles, pour que le fantôme ne passe à travers de rien
+function tirPeutToucher(tireur, capacite, camp, cible) {
+  const fantome = nouveauTir(tireur, sensDuTireur(tireur, camp), camp, capacite);
+  while (fantome.parcouru < fantome.portee) {
+    avancerTir(fantome, PAS_FANTOME);
+    if (!fantome.spectral && tirToucheLeDecor(fantome)) return false;
+    if (chevauche(hitboxTir(fantome), cible)) return true;
+  }
+  return false;
+}
+
+// Le Pokémon (ou un ennemi) lance une capacité :
+//  - une charge : il s'arrête un instant puis fonce devant lui (voir charge.js) ;
+//  - un projectile : un seul tir, ou toute une rafale si la capacité en a une
+//    (« rafale » dans CAPACITES, comme balle graine). Le premier projectile part tout de suite,
+//    les suivants sont tirés par majRafales, un toutes les « intervalle » secondes.
 function activerCapacite(utilisateur, capacite, camp) {
+  if (capacite.effet === "charge") {
+    lancerCharge(utilisateur, capacite, sensDuTireur(utilisateur, camp));
+    return;
+  }
   tirer(utilisateur, capacite, camp);
   const rafale = capacite.rafale;
   if (rafale) {
@@ -52,8 +86,7 @@ function activerCapacite(utilisateur, capacite, camp) {
 // Un projectile, tiré dans la direction où le Pokémon regarde à cet instant
 // (ou vers le haut pour anti-air, vers le bas pour bombe beurk)
 function tirer(utilisateur, capacite, camp) {
-  const sens = camp === "joueur" ? utilisateur.dir : sensEnnemi(utilisateur);
-  creerTir(utilisateur, sens, camp, capacite);
+  creerTir(utilisateur, sensDuTireur(utilisateur, camp), camp, capacite);
   if (camp === "joueur") sons.tir();
   else sons.tirEnnemi();
 }
@@ -83,11 +116,7 @@ function majRafales(dt) {
 // Les tirs ne se touchent pas entre eux : ils se croisent.
 function majTirs(dt) {
   for (const tir of tirs) {
-    // on n'avance jamais plus loin que la portée, même sur la dernière image
-    const pas = Math.min(tir.vitesse * dt, tir.portee - tir.parcouru);
-    tir.x += tir.dx * pas;
-    tir.y += tir.dy * pas;
-    tir.parcouru += pas;
+    avancerTir(tir, tir.vitesse * dt);
 
     if (!tir.spectral && tirToucheLeDecor(tir)) {
       tir.arrete = true;
@@ -107,6 +136,15 @@ function majTirs(dt) {
     }
   }
   tirs = tirs.filter((tir) => tir.parcouru < tir.portee && !tir.arrete);
+}
+
+// Fait avancer un tir de « distance » px en ligne droite, sans jamais dépasser sa portée (même sur la dernière image).
+// Sert aux vrais tirs (majTirs) comme aux tirs fantômes (tirPeutToucher) : ils bougent donc exactement pareil.
+function avancerTir(tir, distance) {
+  const pas = Math.min(distance, tir.portee - tir.parcouru);
+  tir.x += tir.dx * pas;
+  tir.y += tir.dy * pas;
+  tir.parcouru += pas;
 }
 
 // La hitbox d'un tir : un petit carré autour du dessin,

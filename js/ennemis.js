@@ -15,6 +15,7 @@ function creerEnnemi(x, y, nom, capaciteId) {
     types: [...espece.types], // une copie : chaque ennemi a sa propre liste, qu'on peut changer sans toucher au POKEDEX
     capacite: CAPACITES.find((c) => c.id === capaciteId) || null,
     attenteTir: 0, // secondes à attendre avant de pouvoir tirer à nouveau
+    charge: null,  // sa charge en cours (voir charge.js)
     statut: null,  // brûlure, poison… (voir statuts.js)
     ralentissement: null, // sécrétion (voir ralentir dans statuts.js)
     actif: false, mort: false, ejecte: false, timer: 0, anim: Math.random() * 10,
@@ -41,13 +42,19 @@ function majEnnemis(dt) {
     majStatut(e, dt); // la brûlure ou le poison font perdre des PV de temps en temps
     if (e.mort) continue;
     majRalentissement(e, dt);
-    e.vx = sensEnnemi(e) * vitesseEnnemi(e); // il ralentit dès qu'il est touché, et repart à sa vitesse dès la fin
+    // Pendant une charge, c'est elle qui décide de sa vitesse : arrêt, puis dash (voir charge.js)
+    const enCharge = majCharge(e, dt);
+    if (!enCharge) e.vx = sensEnnemi(e) * vitesseEnnemi(e); // il ralentit dès qu'il est touché, et repart à sa vitesse dès la fin
 
     e.anim += dt;
-    appliquerGravite(e, dt, estVolant(e) ? 0 : 1); // un ennemi de type vol flotte : il reste à sa hauteur
     const sens = Math.sign(e.vx);
-    const res = deplacer(e, dt);
-    if (res.mur) {
+    const xAvantDeplacement = e.x;
+    const res = deplacerEnnemi(e, dt);
+    if (enCharge) {
+      // Pendant le dash, il ne fait pas demi-tour : ni contre un mur (le dash s'arrête), ni au bord du vide (il peut tomber)
+      suivreCharge(e, xAvantDeplacement, res);
+      if (e.charge.finie) e.vx = e.charge.direction * vitesseEnnemi(e); // à la fin du dash, il repart en marchant dans le même sens
+    } else if (res.mur) {
       e.vx = -sens * vitesseEnnemi(e);
     } else if (res.sol) {
       // Demi-tour au bord du vide
@@ -62,9 +69,13 @@ function majEnnemis(dt) {
       continue;
     }
 
-    // Tir : si le Pokémon est dans la zone de détection et que le délai est écoulé
+    // Pendant le dash de sa charge, il blesse le Pokémon qu'il percute
+    // (pas si le Pokémon est arrivé au bout ou pendant la transition : il est invulnérable)
+    if (etat === "jeu" && chevauche(e, joueur)) toucherParCharge(e, joueur);
+
+    // Tir : si sa capacité toucherait le Pokémon et que le délai est écoulé
     e.attenteTir = Math.max(0, e.attenteTir - dt);
-    if (e.capacite && e.attenteTir === 0 && chevauche(zoneDetection(e), joueur)) {
+    if (e.capacite && e.attenteTir === 0 && peutToucher(e, e.capacite, joueur)) {
       activerCapacite(e, e.capacite, "ennemi");
       e.attenteTir = DELAI_TIR_ENNEMI;
     }
@@ -89,31 +100,29 @@ function vitesseEnnemi(e) {
   return e.espece.vitesse * facteurVitesse(e);
 }
 
-// Le sens dans lequel l'ennemi marche : 1 = vers la droite, -1 = vers la gauche
+// Le sens dans lequel l'ennemi marche : 1 = vers la droite, -1 = vers la gauche.
+// Pendant une charge, c'est celui de la charge : il est à l'arrêt pendant la préparation, mais il regarde toujours devant lui.
 function sensEnnemi(e) {
+  if (e.charge) return e.charge.direction;
   return e.vx < 0 ? -1 : 1;
 }
 
-// La zone de détection : un rectangle devant l'ennemi, de la même hauteur que lui.
-// Si sa capacité tire vers le haut (anti-air), c'est un rectangle juste au-dessus de lui, de sa largeur :
-// il tire quand le Pokémon lui saute par-dessus.
-// Si elle tire vers le bas (bombe beurk), c'est un rectangle juste en dessous de lui, de sa largeur :
-// il tire quand le Pokémon passe sous lui.
-function zoneDetection(e) {
-  const direction = e.capacite?.projectile?.direction;
-  if (direction === "haut") {
-    return { x: e.x, y: e.y - DETECTION_ENNEMI, l: e.l, h: DETECTION_ENNEMI };
-  }
-  if (direction === "bas") {
-    return { x: e.x, y: e.y + e.h, l: e.l, h: DETECTION_ENNEMI };
-  }
-  const sens = sensEnnemi(e);
-  return {
-    x: sens > 0 ? e.x + e.l : e.x - DETECTION_ENNEMI,
-    y: e.y,
-    l: DETECTION_ENNEMI,
-    h: e.h,
-  };
+// La gravité puis le déplacement d'un ennemi (un ennemi de type vol flotte : il reste à sa hauteur).
+// Sert à l'ennemi lui-même et à sa charge fantôme (chargePeutToucher) : ils bougent exactement pareil.
+function deplacerEnnemi(e, dt) {
+  appliquerGravite(e, dt, estVolant(e) ? 0 : 1);
+  return deplacer(e, dt);
+}
+
+// L'ennemi toucherait-il la cible s'il utilisait cette capacité maintenant ?
+// Chaque sorte de capacité (« effet » dans CAPACITES) a sa propre façon de le savoir :
+//  - un projectile : on lance un tir fantôme et on regarde s'il arrive jusqu'à la cible (tirPeutToucher dans tirs.js) ;
+//  - une charge : on fait foncer un ennemi fantôme et on regarde s'il percute la cible (chargePeutToucher dans charge.js).
+// Pour donner aux ennemis une autre sorte de capacité, il faudra ajouter sa règle ici (et la lancer dans activerCapacite).
+function peutToucher(e, capacite, cible) {
+  if (capacite.effet === "projectile") return tirPeutToucher(e, capacite, "ennemi", cible);
+  if (capacite.effet === "charge") return chargePeutToucher(e, capacite, cible);
+  return false;
 }
 
 // Retire des points de vie à un ennemi ; il meurt quand il n'en a plus.

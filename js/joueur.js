@@ -17,8 +17,7 @@ function creerJoueur(x, y) {
     vx: 0, vy: 0, dir: 1,
     auSol: false, coyote: 0, memoSaut: 0, anim: 0,
     dureeEcrasement: 0,
-    dureeCharge: 0, distanceDashRestante: 0, directionDash: 1,
-    ennemisTouchésParCharge: new Set(),
+    charge: null, // sa charge en cours (voir charge.js)
     pv: espece.pv, // points de vie
     types: [...espece.types], // une copie, comme pour les ennemis : on peut la changer sans toucher au POKEDEX
     delaiPics: 0,  // tant que c'est > 0, les pics ne blessent pas
@@ -47,13 +46,11 @@ function majJoueur(dt, obeitAuxTouches = true) {
     return;
   }
 
-  // Déplacement horizontal, sauf pendant le petit dash de charge.
+  // Déplacement horizontal, sauf pendant une charge : c'est alors elle qui décide de la vitesse
+  // (arrêt pendant la préparation, puis le dash : voir charge.js).
   const sens = (tenues.droite ? 1 : 0) - (tenues.gauche ? 1 : 0);
-  if (j.distanceDashRestante > 0) {
-    j.vx = j.directionDash * Math.min(
-      CAPACITES.find((c) => c.id === "charge").vitesseDash,
-      j.distanceDashRestante / dt,
-    );
+  if (majCharge(j, dt)) {
+    // la charge a déjà choisi la vitesse
   } else if (sens !== 0) {
     j.dir = sens;
     let accel = j.auSol ? ACCEL_SOL : ACCEL_AIR;
@@ -78,19 +75,12 @@ function majJoueur(dt, obeitAuxTouches = true) {
 
   // Une capacité est activée une seule fois par appui sur sa touche.
   j.dureeEcrasement = Math.max(0, j.dureeEcrasement - dt);
-  j.dureeCharge = Math.max(0, j.dureeCharge - dt);
   for (const attribution of CAPACITES_JOUEUR) {
     if (pressees[attribution.action]) {
       const capacite = CAPACITES.find((c) => c.id === attribution.capacite);
       if (!capacite) continue;
       if (capacite.effet === "ecrasement") j.dureeEcrasement = capacite.duree;
-      else if (capacite.effet === "charge") {
-        j.dureeCharge = capacite.duree;
-        j.distanceDashRestante = capacite.distanceDash;
-        j.directionDash = j.dir;
-        j.ennemisTouchésParCharge.clear();
-      }
-      else activerCapacite(j, capacite, "joueur");
+      else activerCapacite(j, capacite, "joueur"); // un projectile ou une charge
     }
   }
 
@@ -101,13 +91,7 @@ function majJoueur(dt, obeitAuxTouches = true) {
   const basAvant = j.y + j.h;
   const xAvantDeplacement = j.x;
   const res = deplacer(j, dt);
-  if (j.distanceDashRestante > 0) {
-    j.distanceDashRestante = Math.max(0, j.distanceDashRestante - Math.abs(j.x - xAvantDeplacement));
-    if (res.mur || j.distanceDashRestante === 0) {
-      j.distanceDashRestante = 0;
-      j.vx = 0;
-    }
-  }
+  suivreCharge(j, xAvantDeplacement, res); // le dash s'arrête au bout de sa distance, ou contre un mur
   j.auSol = res.sol;
   if (j.auSol) j.coyote = 0.1;
   if (res.tete.length > 0) frapperBloc(blocLePlusProche(res.tete, j));
@@ -155,12 +139,8 @@ function majJoueur(dt, obeitAuxTouches = true) {
       const capaciteEcrasement = CAPACITES.find((c) => c.id === "ecrasement");
       subirCapacite(e, capaciteEcrasement, j);
       j.vy = tenues.saut ? -FORCE_SAUT : -FORCE_SAUT * 0.6;
-    } else if (j.dureeCharge > 0 && !tombeSurLeDessus) {
-      if (!j.ennemisTouchésParCharge.has(e)) {
-        const capaciteCharge = CAPACITES.find((c) => c.id === "charge");
-        subirCapacite(e, capaciteCharge, j);
-        j.ennemisTouchésParCharge.add(e);
-      }
+    } else if (!tombeSurLeDessus) {
+      toucherParCharge(j, e); // seulement s'il est en train de foncer, et une fois par ennemi (voir charge.js)
     }
   }
 

@@ -61,6 +61,15 @@ const POKEMON_JOUEUR = "tiplouf";
 //   direction : « avant » (part devant le tireur, dans le sens où il regarde), « haut » (part du haut de sa tête, vers le ciel)
 //               ou « bas » (part de sous ses pieds, vers le sol)
 //   spectral  : true = traverse les blocs
+//   vitesse   : en px/s ; portee : distance maximale du tir (px)
+//   Un ennemi ne lance son projectile que si ce tir, parti maintenant, toucherait le Pokémon
+//   (avant la fin de sa portée et sans être arrêté par un bloc) : voir peutToucher dans ennemis.js.
+// Pour une charge (voir charge.js) :
+//   preparation  : secondes pendant lesquelles il s'arrête avant de foncer
+//   distanceDash : distance du dash (px) ; il s'arrête plus tôt s'il rencontre un mur (il ne s'arrête pas au bord du vide)
+//   vitesseDash  : vitesse du dash (px/s)
+//   Il ne blesse que pendant le dash, une fois chaque Pokémon qu'il percute.
+//   Un ennemi ne charge que si ce dash, lancé maintenant, percuterait le Pokémon.
 const CAPACITES = [
   {
     id: "flammeche",
@@ -136,8 +145,8 @@ const CAPACITES = [
     type: "normal",
     effet: "charge",
     attaque: 10,
-    duree: 3,
-    distanceDash: 64,
+    preparation: 0.4,
+    distanceDash: 160,
     vitesseDash: 480,
   },
 ];
@@ -187,7 +196,7 @@ const TOUCHES_JOUEUR = { gauche: "arrowleft", droite: "arrowright", saut: "arrow
 const CAPACITES_JOUEUR = [
   { action: "capacite1", capacite: "flammeche" },
   { action: "capacite2", capacite: "ecrasement" },
-  { action: "capacite3", capacite: "balle-ombre" },
+  { action: "capacite3", capacite: "charge" },
   { action: "capacite4", capacite: "balle-graine" },
   { action: "capacite5", capacite: "pistolet-a-o" },
 ];
@@ -198,6 +207,5 @@ const COULEUR_DEGATS_ENNEMI = "#ffe27a"; // un ennemi est touché
 const COULEUR_SOIN = "#7dff9a";          // le texte « Soigné ! » au centre Pokémon
 const COULEUR_RALENTISSEMENT = "#ffffff"; // le texte « Ralenti ! » et les fils collés sur un Pokémon ralenti (sécrétion)
 
-// Comportement de tir ennemi (détection et délai, indépendants du projectile utilisé).
-const DETECTION_ENNEMI = 256; // un ennemi tire si le Pokémon est à moins de ça (px) : devant lui, à sa hauteur, ou juste au-dessus / en dessous de lui pour un tir vers le haut (anti-air) / vers le bas (bombe beurk)
+// Comportement de tir ennemi (quand il tire : voir peutToucher dans ennemis.js)
 const DELAI_TIR_ENNEMI = 4;   // secondes minimum entre deux tirs d'un même ennemi

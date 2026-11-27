@@ -30,9 +30,6 @@
 //                  Touché par anti-air, il perd son type vol et tombe : il marche alors comme les autres.
 //                  Il va bien avec la capacité "balle-ombre".
 //   "arcko"      : petit gecko vert, tient dans sa case (comme le joueur). Rapide : il marche plus vite que les autres.
-//                  Il va bien avec la capacité "balle-graine".
-//   "tiplouf"    : petit pingouin bleu, tient dans sa case (comme le joueur). Lent, mais il encaisse mieux les coups.
-//                  Il va bien avec la capacité "pistolet-a-o".
 // « capacite » choisit son tir (voir CAPACITES dans reglages.js).
 //
 // « fond » choisit le paysage qui défile derrière (voir dessinerFond dans dessin-decor.js) :
@@ -109,12 +106,12 @@ const NIVEAUX = [
       "########################################   ###########################    ###########################   ######################",
     ],
     ennemis: [
-      { colonne: 18, ligne: 14, nom: "salameche", capacite: "flammeche" },
+      { colonne: 18, ligne: 14, nom: "salameche", capacite: "charge" },
       { colonne: 24, ligne: 11, nom: "aspicot", capacite: "secretion" },
-      { colonne: 31, ligne: 9, nom: "fantominus", capacite: "balle-ombre" },
+      { colonne: 31, ligne: 9, nom: "fantominus", capacite: "bombe-beurk" },
       { colonne: 49, ligne: 10, nom: "aspicot", capacite: "dard-venin" },
-      { colonne: 55, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
-      { colonne: 57, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
+      { colonne: 55, ligne: 14, nom: "aspicot", capacite: "anti-air" },
+      { colonne: 57, ligne: 14, nom: "aspicot", capacite: "anti-air" },
       { colonne: 86, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
       { colonne: 95, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
       { colonne: 105, ligne: 14, nom: "aspicot", capacite: "dard-venin" },
